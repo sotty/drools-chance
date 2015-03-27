@@ -88,6 +88,7 @@ public class TerminologyGenerator {
             throw new RuntimeException(e);
         }
 
+
         model.prepare();
 
         return model;
