@@ -278,12 +278,6 @@ public class ThingImpl
     }
     
 
-    public boolean hasTypeCode(BitSet typeCode) {
-        return this.getCurrentTypeCode().equals(typeCode);
-    }
-
-
-
 
     public boolean equals(Object object) {
         return super.equals( object );
