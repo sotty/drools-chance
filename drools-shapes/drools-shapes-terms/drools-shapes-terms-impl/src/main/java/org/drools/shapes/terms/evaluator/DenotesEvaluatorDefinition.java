@@ -6,6 +6,7 @@ import org.drools.core.base.BaseEvaluator;
 import org.drools.core.base.ValueType;
 import org.drools.core.base.evaluators.EvaluatorDefinition;
 import org.drools.core.base.evaluators.Operator;
+import org.drools.core.base.extractors.ConstantValueReader;
 import org.drools.core.common.InternalFactHandle;
 import org.drools.core.common.InternalWorkingMemory;
 import org.drools.core.factmodel.traits.TraitProxy;
@@ -107,7 +108,11 @@ public class DenotesEvaluatorDefinition implements EvaluatorDefinition {
         }
 
         private String getPropertyURI( InternalReadAccessor extractor ) {
-            RdfProperty ann = extractor.getNativeReadMethod().getAnnotation( RdfProperty.class );
+        	// TODO It crashes if the left operand is calculated. This patch fix it, but is it correct?
+        	if (extractor instanceof ConstantValueReader)
+        		return null;
+        	
+        	RdfProperty ann = extractor.getNativeReadMethod().getAnnotation( RdfProperty.class );
             return ann != null ? ann.value() : null;
         }
 
