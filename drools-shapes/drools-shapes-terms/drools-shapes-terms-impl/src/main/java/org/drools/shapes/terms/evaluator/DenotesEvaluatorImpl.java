@@ -83,7 +83,10 @@ public class DenotesEvaluatorImpl implements TermsInference {
     private EntityDescriptionQuery descendants(ConceptDescriptor right) {
         EntityNameOrURI nameOrURI = new EntityNameOrURI();
         nameOrURI.setEntityName( ModelUtils.createScopedEntityName( right.getCode(), right.getCodeSystem() ) );
-
+        // TODO Check if this is valid. Should we only work with name/namespace?
+        if (right.getUri()!=null)
+        	nameOrURI.setUri(right.getUri().toString());
+        
         return new HierarchyEntityDescriptionQueryImpl( nameOrURI );
     }
 
@@ -182,6 +185,9 @@ public class DenotesEvaluatorImpl implements TermsInference {
             name.setName(cd.getCode());
             name.setNamespace(cd.getCodeSystem());
             entityNameOrURI.setEntityName(name);
+            // TODO Check if this is valid. EntityName/URI are mutually exclusive??
+            if (cd.getUri()!=null)
+            	entityNameOrURI.setUri(cd.getUri().toString());
         } else {
             entityNameOrURI.setUri(cd.getUri().toString());
         }
