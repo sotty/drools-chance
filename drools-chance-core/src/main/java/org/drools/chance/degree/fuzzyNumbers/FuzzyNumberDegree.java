@@ -131,4 +131,8 @@ public class FuzzyNumberDegree implements Degree {
 
     public static FuzzyNumberDegree FALSE = null;
 
+    @Override
+    public Object getBeliefSystem() {
+        return null;
+    }
 }

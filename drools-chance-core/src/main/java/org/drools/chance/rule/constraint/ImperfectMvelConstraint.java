@@ -107,7 +107,8 @@ public class ImperfectMvelConstraint extends MvelConstraint
                 }
             }
 
-            if ( ! isDynamic && invocationCounter.getAndIncrement() == JIT_THRESOLD ) {
+            int jittingThreshold = TEST_JITTING ? 0 : workingMemory.getKnowledgeBase().getConfiguration().getJittingThreshold();
+            if ( ! isDynamic && invocationCounter.getAndIncrement() == jittingThreshold ) {
                 jitEvaluator(handle, workingMemory, leftTuple);
             }
         }

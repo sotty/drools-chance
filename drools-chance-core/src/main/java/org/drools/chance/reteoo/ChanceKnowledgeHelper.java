@@ -11,16 +11,19 @@ import org.drools.chance.evaluation.MockEvaluation;
 import org.drools.chance.evaluation.OuterOperatorEvaluation;
 import org.drools.chance.evaluation.SimpleEvaluationImpl;
 import org.drools.chance.factmodel.Imperfect;
+import org.drools.chance.factmodel.ImperfectTraitProxy;
 import org.drools.chance.rule.constraint.OuterOperatorConstraint;
 import org.drools.core.WorkingMemory;
 import org.drools.core.base.ClassObjectType;
 import org.drools.core.base.DefaultKnowledgeHelper;
 import org.drools.core.base.DroolsQuery;
+import org.drools.core.beliefsystem.ModedAssertion;
 import org.drools.core.common.BaseNode;
 import org.drools.core.common.InternalFactHandle;
 import org.drools.core.common.NetworkNode;
 import org.drools.core.definitions.rule.impl.RuleImpl;
 import org.drools.core.factmodel.AnnotationDefinition;
+import org.drools.core.factmodel.traits.Thing;
 import org.drools.core.reteoo.BetaNode;
 import org.drools.core.reteoo.FromNode;
 import org.drools.core.reteoo.LeftInputAdapterNode;
@@ -38,6 +41,7 @@ import org.drools.core.rule.Pattern;
 import org.drools.core.rule.RuleConditionElement;
 import org.kie.api.definition.process.Node;
 import org.kie.api.runtime.rule.FactHandle;
+import org.kie.internal.runtime.beliefs.Mode;
 
 import java.util.ArrayList;
 import java.util.LinkedList;
@@ -59,6 +63,16 @@ public class ChanceKnowledgeHelper extends DefaultKnowledgeHelper implements Cha
             return getDegree();
         }
         return getEvaluation( label ).getDegree();
+    }
+
+    @Override
+    public Thing don( Object core, Class trait, Mode... modes ) {
+        Thing t = (Thing) super.don(core, trait, modes);
+        //FIXME The degree should be handled by a proper TMS/BS
+        if ( t instanceof ImperfectTraitProxy && modes.length > 0 && modes[0] instanceof Degree ) {
+            ((ImperfectTraitProxy) t).setDegree( (Degree) modes[ 0 ]);
+        }
+        return t;
     }
 
     public Evaluation getEvaluation() {

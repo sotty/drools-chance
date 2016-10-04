@@ -56,7 +56,7 @@ public class ImpBeanLegacyProxy extends TraitProxy implements ImpBean {
 
 
     @Override
-    public String getTraitName() {
+    public String _getTraitName() {
         return ImpBean.class.getName();
     }
 

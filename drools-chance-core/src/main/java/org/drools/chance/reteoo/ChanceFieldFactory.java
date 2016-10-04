@@ -6,13 +6,11 @@ import org.drools.core.base.FieldFactory;
 import org.drools.core.base.ValueType;
 import org.drools.core.base.field.ObjectFieldImpl;
 import org.drools.core.spi.FieldValue;
-import org.drools.core.type.DateFormats;
 
 public class ChanceFieldFactory extends FieldFactory {
 
     public FieldValue getFieldValue( Object value,
-                                     ValueType valueType,
-                                     DateFormats dateFormats ) {
+                                     ValueType valueType ) {
 
         // intercepting linguistic, double-supported fields
         if ( value instanceof Linguistic &&
@@ -20,7 +18,7 @@ public class ChanceFieldFactory extends FieldFactory {
             return new ObjectFieldImpl( value );
         }
         
-        return super.getFieldValue( value, valueType, dateFormats );
+        return super.getFieldValue( value, valueType );
     }
 
 

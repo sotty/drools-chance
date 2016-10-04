@@ -35,7 +35,7 @@ import java.io.Serializable;
  * - ...
  *
  */
-public interface Degree extends Comparable<Degree>, Serializable {
+public interface Degree extends Comparable<Degree>, Serializable, Mode {
 
     /**
      * @return the degree, narrowed down to a simple double value

@@ -270,4 +270,8 @@ public class IntervalDegree implements Degree {
     }
 
 
+	@Override
+	public Object getBeliefSystem() {
+		return null;
+	}
 }

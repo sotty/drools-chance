@@ -16,10 +16,13 @@ import org.drools.core.base.evaluators.Operator;
 import org.drools.core.common.InternalFactHandle;
 import org.drools.core.common.InternalWorkingMemory;
 import org.drools.core.factmodel.traits.Thing;
+import org.drools.core.factmodel.traits.TraitableBean;
 import org.drools.core.rule.VariableRestriction;
 import org.drools.core.spi.Evaluator;
 import org.drools.core.spi.FieldValue;
 import org.drools.core.spi.InternalReadAccessor;
+
+import java.util.BitSet;
 
 public class IsAEvaluatorDefinition extends org.drools.core.base.evaluators.IsAEvaluatorDefinition {
 
@@ -69,7 +72,31 @@ public class IsAEvaluatorDefinition extends org.drools.core.base.evaluators.IsAE
             if ( !super.evaluate( workingMemory, extractor, handle, value ) ) {
                 return ChanceDegreeTypeRegistry.getSingleInstance().getDefaultOne().False();
             }
-            return extractDegree( (Thing) extractor.getValue( workingMemory, handle.getObject() ) );
+
+            final Object objectValue = extractor.getValue( workingMemory, handle.getObject() );
+            final String traitType = asType(value.getValue());
+
+            TraitableBean core;
+            if ( objectValue instanceof Thing ) {
+                Thing thing = (Thing) objectValue;
+                core = (TraitableBean) thing.getCore();
+            } else if ( objectValue instanceof TraitableBean ) {
+                core = (TraitableBean) objectValue;
+            } else {
+                core = lookForWrapper( objectValue, workingMemory );
+            }
+
+            return extractDegree( core.getTrait( traitType ) );
+        }
+
+        private String asType( Object value ) {
+            if ( value instanceof Class ) {
+                return ((Class) value ).getName();
+            } else if ( value instanceof String ) {
+                return (String) value;
+            } else {
+                throw new UnsupportedOperationException( "TODO : process value of type : " + value.getClass() );
+            }
         }
 
         private Degree extractDegree( Thing proxy ) {

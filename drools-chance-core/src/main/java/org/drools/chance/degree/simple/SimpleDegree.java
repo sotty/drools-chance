@@ -196,4 +196,8 @@ public class SimpleDegree implements Degree {
 		return new IntervalDegree(value,value);
 	}
 
+	@Override
+	public Object getBeliefSystem() {
+		return null;
+	}
 }

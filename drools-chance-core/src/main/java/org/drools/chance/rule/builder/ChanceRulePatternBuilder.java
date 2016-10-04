@@ -396,7 +396,7 @@ public class ChanceRulePatternBuilder extends PatternBuilder {
 
             String left = rel.getLeft() instanceof BindingDescr ? ( (BindingDescr) rel.getLeft() ).getExpression() : rel.getLeft().toString();
 
-            InternalReadAccessor extractor = getFieldReadAccessor( context, rel, pattern.getObjectType(), left, null, false );
+            InternalReadAccessor extractor = getFieldReadAccessor( context, rel, pattern, left, null, false );
             if ( extractor != null ) {
                 if ( extractor.getExtractToClass().isAssignableFrom( ImperfectField.class ) ) {
                     return ChanceOperators.isImperfect( rel.getOperator() );
@@ -481,7 +481,7 @@ public class ChanceRulePatternBuilder extends PatternBuilder {
     }
 
     public String ensureCrispAccessors( RuleBuildContext context, Pattern pattern, RelationalExprDescr relDescr, String value1 ) {
-        InternalReadAccessor extractor = getFieldReadAccessor( context, relDescr, pattern.getObjectType(), value1, null, false );
+        InternalReadAccessor extractor = getFieldReadAccessor( context, relDescr, pattern, value1, null, false );
 
         if ( extractor == null ) {
             return null;

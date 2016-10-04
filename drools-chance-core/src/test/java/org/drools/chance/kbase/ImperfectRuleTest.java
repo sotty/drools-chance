@@ -299,7 +299,6 @@ public class ImperfectRuleTest extends AbstractChanceTest {
 
 
     @Test
-    @Ignore
     public void testQueries() {
         KieSession kSession = initBasicChanceTest("org/drools/chance/testQueries.drl");
         Map res = (Map) kSession.getGlobal( MAP );
@@ -329,7 +328,6 @@ public class ImperfectRuleTest extends AbstractChanceTest {
     }
 
     @Test
-    @Ignore
     public void testImperfectTrait() {
         KieSession kSession = initBasicChanceTest("org/drools/chance/evaluator/testImperfectTrait.drl");
         Map map = (Map) kSession.getGlobal( MAP );
@@ -364,22 +362,6 @@ public class ImperfectRuleTest extends AbstractChanceTest {
 
 
     @Test
-    @Ignore
-    public void testMVELMatchesOperator() {
-        KieSession kSession = initBasicChanceTest("org/drools/chance/testMVELMatchesOperator.drl");
-        Map res = (Map) kSession.getGlobal( MAP );
-
-
-        assertTrue( res.containsKey( "X" ) );
-
-        assertEquals( 1.0 , (Double) res.get( "X" ), 1e-6 );
-
-    }
-
-
-
-    @Test
-    @Ignore( "Not implemented yet" )
     public void testExists() {
         KieSession kSession = initBasicChanceTest("org/drools/chance/testExists.drl");
         Map map = (Map) kSession.getGlobal( MAP );

@@ -199,11 +199,10 @@ public class LpadDegree implements Degree {
         return ans;
     }
 
-
-
-
-
-
+    @Override
+    public Object getBeliefSystem() {
+        return null;
+    }
 
 
     public static class DegBit {
