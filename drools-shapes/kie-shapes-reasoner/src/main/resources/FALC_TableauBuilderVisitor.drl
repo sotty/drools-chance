@@ -1,0 +1,478 @@
+/*
+ * Copyright 2011 JBoss Inc
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *       http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+ package org.kie.semantics.lang.dl;
+
+import org.semanticweb.owlapi.model.*;
+import org.semanticweb.owlapi.search.EntitySearcher;
+import java.util.stream.Collectors;
+
+import org.kie.semantics.utils.NameUtils;
+
+import java.util.List;
+import java.io.InputStream;
+import java.io.IOException;
+import org.mvel2.templates.*;
+
+import java.util.Map;
+import java.util.HashMap;
+
+
+
+global StringBuilder out;
+global TemplateRegistry registry;
+
+
+
+function void applyTemplate( String templateName, Object context, TemplateRegistry registry, Map vars, StringBuilder out ) {
+    CompiledTemplate template = (CompiledTemplate) registry.getNamedTemplate(templateName);
+    out.append ( TemplateRuntime.execute(template, context, vars).toString().trim() ).append("\n");
+ }
+
+
+
+
+rule init
+salience 9999
+when
+then
+    applyTemplate( "header.drlt", null, registry, null, out );
+end
+
+
+
+
+ declare OWLClassBinding
+     klassIri    : String                @key
+     fatherIri   : String                @key
+ end
+
+ declare OWLMarker
+     klassIri    : String                @key
+ end
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+//
+//
+//
+
+				/* Vist AST and fragment it */
+
+
+rule "Definition"
+salience 1000
+when
+    $context : OWLOntology( )
+	$klass   : OWLClass( $type : IRI )
+	$def     : OWLClassExpression(  ) from EntitySearcher.getEquivalentClasses( $klass, $context ).collect( Collectors.toList() )
+	not        OWLClassBinding( $klass.toString(), $def.toString() ; );
+then
+    insert( new OWLClassBinding( $def.toString(), $klass.toString() ) );
+end
+
+
+rule "Rewrite subClassOf"
+salience 1500
+no-loop
+when
+    $context : OWLOntology( )
+	$klass   : OWLClass( $type : IRI )
+	exists     OWLClassExpression(  ) from EntitySearcher.getSuperClasses( $klass, $context ).collect( Collectors.toList() )
+then
+
+//    System.out.println(" WARNING FOUND SUBCLASS ON " + $klass + "; CAN ONLY HANDLE EQUIV "  );
+//    OWLDataFactory factory = $context.getOWLOntologyManager().getOWLDataFactory();
+//        OWLClass temp = factory.getOWLClass( IRI.create( java.util.UUID.randomUUID().toString() ) );
+//        OWLClassExpression mockDef = factory.getOWLObjectIntersectionOf( $def, temp );
+
+    OWLDataFactory factory = $context.getOWLOntologyManager().getOWLDataFactory();
+        OWLClass temp = factory.getOWLClass( IRI.create(java.util.UUID.randomUUID().toString()) );
+        OWLClassExpression[] sups = EntitySearcher.getSuperClasses( $klass, $context ).toArray( OWLClassExpression[]::new );
+
+        OWLClassExpression[] ext = java.util.Arrays.copyOf( sups, sups.length + 1);
+        ext[ sups.length ] = temp;
+
+        System.out.println(" \t BINDING TO " + ext );
+        OWLClassExpression mockDef = factory.getOWLObjectIntersectionOf( ext );
+
+    insert( new OWLClassBinding( mockDef.toString(), $klass.toString() ) );
+    insert( mockDef );
+end
+
+
+
+
+
+rule "Basic Visit"
+salience 1000
+when
+    $context : OWLOntology( )
+	$klass   : OWLClass( $type : IRI )
+	$def     : OWLClassExpression(  ) from EntitySearcher.getEquivalentClasses( $klass, $context ).collect( Collectors.toList() )
+	not        OWLMarker( $def.toString() ; );
+then
+    insert( new OWLMarker( $def.toString() ) );
+	insert( $def );
+end
+
+
+
+//
+//
+//
+//					/* DO Visit */
+//
+//
+
+rule "And"
+salience -1010
+when
+	$and  : OWLObjectIntersectionOf( $childz : this.getOperandsAsList() )
+//	$bond : OWLClassBinding( $and, $andId, $father, $id ; )
+then
+	//System.out.println("AND ----> " + $and );
+	HashMap map = new HashMap();
+	    map.put( "id", $and );
+	    map.put( "children", $childz );
+	applyTemplate( "and.drlt", $and, registry, map, out );
+end
+
+rule "And Args"
+salience -1010
+when
+    $ont  : OWLOntology()
+	$nan  : OWLObjectIntersectionOf( $childz : this.getOperandsAsList() )
+	$arg  : OWLClassExpression() from $childz
+	not     OWLMarker( $arg.toString() ; )
+then
+    //System.out.println(" and arg ");
+    insert( new OWLMarker( $arg.toString() ) );
+    insert( $arg );
+end
+
+rule "Nand"
+salience -1010
+when
+    $neg  : OWLObjectComplementOf( operand.classExpressionLiteral == false, $op : operand )
+	$and  : OWLObjectIntersectionOf( $childz : this.getOperandsAsList() ) from $op
+then
+	//System.out.println("NAND ----> " + $and + " << " + " thanks to " + $neg);
+	HashMap map = new HashMap();
+	    map.put( "id", $neg );
+	    map.put( "children", $childz );
+	applyTemplate( "nand.drlt", NameUtils.getInstance(), registry, map, out );
+end
+
+rule "Nand Args"
+salience -1010
+when
+    $ont  : OWLOntology()
+    $neg  : OWLObjectComplementOf( operand.classExpressionLiteral == false, $op : operand )
+	$nan  : OWLObjectIntersectionOf( $childz : this.getOperandsAsList() ) from $op
+	$arg  : OWLClassExpression() from $childz
+	not     OWLObjectComplementOf( operand == $arg )
+	not     OWLMarker( $arg.toString() ; )
+then
+    //System.out.println(" nand arg ");
+    insert( new OWLMarker( $arg.toString() ) );
+    insert( $ont.getOWLOntologyManager().getOWLDataFactory().getOWLObjectComplementOf( $arg ) );
+end
+
+
+
+
+
+
+
+rule "Or"
+salience -1110
+when
+	$or   : OWLObjectUnionOf( $childz : this.getOperandsAsList() )
+//	$bond : OWLClassBinding( $or, $orId, $father, $id ; )
+then
+	//System.out.println("OR ----> " + $or );
+	HashMap map = new HashMap();
+	    map.put( "id", $or );
+	    map.put( "children", $childz );
+	applyTemplate( "or.drlt", $or, registry, map, out );
+end
+
+rule "Or Args"
+salience -1010
+when
+    $ont  : OWLOntology()
+	$nan  : OWLObjectUnionOf( $childz : this.getOperandsAsList() )
+	$arg  : OWLClassExpression() from $childz
+	not     OWLMarker( $arg.toString() ; )
+then
+    //System.out.println(" or arg ");
+    insert( new OWLMarker( $arg.toString() ) );
+    insert( $arg );
+end
+
+rule "Nor"
+salience -1110
+when
+    $neg  : OWLObjectComplementOf( operand.classExpressionLiteral == false, $op : operand )
+	$nor  : OWLObjectUnionOf( $childz : this.getOperandsAsList() ) from $op
+then
+	//System.out.println("NOR ----> " + $nor + " << " + " thanks to " + $neg);
+	HashMap map = new HashMap();
+	    map.put( "id", $neg );
+	    map.put( "children", $childz );
+	applyTemplate( "nor.drlt", NameUtils.getInstance(), registry, map, out );
+end
+
+rule "Nor Args"
+salience -1110
+when
+    $ont  : OWLOntology()
+    $neg  : OWLObjectComplementOf( operand.classExpressionLiteral == false, $op : operand )
+	$nor  : OWLObjectUnionOf( $childz : this.getOperandsAsList() ) from $op
+	$arg  : OWLClassExpression() from $childz
+	not     OWLObjectComplementOf( operand == $arg )
+	not     OWLMarker( $arg.toString() ; )
+then
+    //System.out.println(" nor arg ");
+    insert( new OWLMarker( $arg.toString() ) );
+    insert( $ont.getOWLOntologyManager().getOWLDataFactory().getOWLObjectComplementOf( $arg ) );
+end
+
+
+
+
+
+
+rule "Exists"
+salience -1310
+when
+	$some  : OWLObjectSomeValuesFrom( $prop : property, $target : filler  )
+then
+	//System.out.println("EXISTS ----> " + $prop + " .. " + $target );
+	HashMap map = new HashMap();
+	    map.put( "id", $some );
+	    map.put( "prop", $prop );
+	    map.put( "target", $target );
+	applyTemplate( "exists.drlt", null, registry, map, out );
+end
+
+
+
+rule "Exists Arg"
+salience -1310
+when
+	$some  : OWLObjectSomeValuesFrom( $prop : property, $target : filler  )
+	$type  : OWLObject() from $target
+	not      OWLMarker( $type.toString() ; )
+then
+    insert( new OWLMarker( $target.toString() ) );
+    //System.out.println( "\n EXIST ARGS ! " + $target );
+	insert( $target );
+end
+
+
+
+rule "NExists"
+salience -1310
+when
+    $ont  : OWLOntology()
+	$neg  : OWLObjectComplementOf( operand.classExpressionLiteral == false, $op : operand )
+	$nex  : OWLObjectSomeValuesFrom( $prop : property, $target : filler  ) from $op
+	$obp  : OWLObjectPropertyExpression( ) from $prop
+	$exp  : OWLClassExpression() from $target
+then
+    OWLDataFactory factory = $ont.getOWLOntologyManager().getOWLDataFactory();
+    OWLObjectAllValuesFrom allNeg = factory.getOWLObjectAllValuesFrom( $obp, factory.getOWLObjectComplementOf( $exp ) );
+    //System.out.println(" DUAL ALL DETECTED" + allNeg );
+    insert( allNeg );
+end
+
+
+
+
+
+
+
+
+
+
+rule "Forall"
+salience -1310
+when
+	$all   : OWLObjectAllValuesFrom( $prop : property, $target : filler  )
+then
+	//System.out.println("FORALL ----> " + $prop + " .. " + $target );
+	HashMap map = new HashMap();
+	    map.put( "id", $all );
+	    map.put( "prop", $prop );
+	    map.put( "target", $target );
+	applyTemplate( "forall.drlt", null, registry, map, out );
+end
+
+
+
+rule "Forall Arg"
+salience -1310
+when
+	$all   : OWLObjectAllValuesFrom( $prop : property, $target : filler  )
+	$type  : OWLObject() from $target
+	not      OWLMarker( $type.toString() ; )
+then
+    insert( new OWLMarker( $target.toString() ) );
+    //System.out.println( "\n FORALL ARGS ! " + $target );
+	insert( $target );
+end
+
+
+
+rule "For None"
+salience -1310
+when
+    $ont  : OWLOntology()
+	$neg  : OWLObjectComplementOf( operand.classExpressionLiteral == false, $op : operand )
+	$nfa  : OWLObjectAllValuesFrom( $prop : property, $target : filler  ) from $op
+	$obp  : OWLObjectPropertyExpression( ) from $prop
+	$exp  : OWLClassExpression() from $target
+then
+    OWLDataFactory factory = $ont.getOWLOntologyManager().getOWLDataFactory();
+    OWLObjectSomeValuesFrom allNeg = factory.getOWLObjectSomeValuesFrom( $obp, factory.getOWLObjectComplementOf( $exp ) );
+    //System.out.println(" DUAL EXISTS DETECTED" + allNeg );
+    insert( allNeg );
+end
+
+
+
+
+
+
+
+
+
+
+
+
+rule "Dual Negation"
+when
+    $outer : OWLObjectComplementOf( $arg : operand )
+    $inner : OWLObjectComplementOf( $tgt : operand ) from $arg
+then
+    //System.out.println( "removing dual negation  " + $outer );
+    retract( $outer );
+    insert( $tgt );
+end
+
+
+rule "Type"
+//salience -2010
+when
+	$bond   : OWLClassBinding( $leafIri, $rootIri ; )
+then
+	//System.out.println( "RULE TYPE >> "+ $leafIri + " >> " + $rootIri );
+	HashMap map = new HashMap();
+	    map.put( "id", $rootIri );
+	    map.put( "target", $leafIri );
+	applyTemplate( "type.drlt", null, registry, map, out );
+
+end
+
+
+rule "Neg_Type"
+//salience -2010
+when
+	$neg    : OWLObjectComplementOf( $op : operand )
+	$type   : OWLClassExpression() from $op
+	$bond   : OWLMarker( $neg.toString() ; )
+then
+	//System.out.println( "RULE NEG TYPE >> "+ $neg + " >> " + $type );
+	HashMap map = new HashMap();
+	    map.put( "id", $type );
+	    map.put( "target", $neg );
+	applyTemplate( "negtype.drlt", null, registry, map, out );
+
+		map = new HashMap();
+	    map.put( "id", $neg );
+	    map.put( "target", $type );
+	applyTemplate( "negtype.drlt", null, registry, map, out );
+end
+
+rule "Neg Arg"
+//salience -2010
+when
+	$neg    : OWLObjectComplementOf( $op : operand )
+	$type   : OWLClassExpression() from $op
+	not       OWLMarker( $type.toString() ; )
+then
+	insert( new OWLMarker( $type.toString() ) );
+	insert( $type );
+end
+
+
+
+
+
+
+
+
+
+
+
+rule "Obj_Relations Domain Complex"
+when
+    $onto : OWLOntology()
+    $prop : OWLObjectProperty( $iri : IRI )
+    $domx : OWLClassExpression( classExpressionLiteral == false ) from EntitySearcher.getDomains( $prop, $onto ).collect( Collectors.toList() )
+then
+    OWLDataFactory factory = $onto.getOWLOntologyManager().getOWLDataFactory();
+    NameUtils utils = NameUtils.getInstance();
+        OWLClass domClass = factory.getOWLClass( IRI.create( utils.buildNameFromIri( "", $prop.toString() ) + "Domain" ) );
+
+    insert( domClass );
+
+    insert( new OWLClassBinding( $domx.toString(), domClass.toString() ) );
+
+    insert( $domx );
+end
+
+rule "Obj_Relations Range Complex"
+when
+    $onto : OWLOntology()
+    $prop : OWLObjectProperty( $iri : IRI )
+    $ranx : OWLClassExpression( classExpressionLiteral == false ) from EntitySearcher.getRanges( $prop, $onto ).collect( Collectors.toList() )
+then
+    OWLDataFactory factory = $onto.getOWLOntologyManager().getOWLDataFactory();
+    NameUtils utils = NameUtils.getInstance();
+        OWLClass ranClass = factory.getOWLClass( IRI.create( utils.buildNameFromIri( "", $prop.toString() ) + "Range" ) );
+
+    insert( ranClass );
+
+    insert( new OWLClassBinding( $ranx.toString(), ranClass.toString() ) );
+
+    insert( $ranx );
+end
