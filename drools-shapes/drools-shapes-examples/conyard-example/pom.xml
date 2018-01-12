@@ -21,19 +21,18 @@
   <modelVersion>4.0.0</modelVersion>
 
   <parent>
-    <groupId>org.drools</groupId>
-    <artifactId>drools-shapes-examples</artifactId>
-    <version>6.4.0-SNAPSHOT</version>
+    <groupId>org.kie</groupId>
+    <artifactId>kie-shapes-examples</artifactId>
+    <version>1.0-SNAPSHOT</version>
   </parent>
 
   <name>Drools :: Shapes Construction Yard Example</name>
 
   <groupId>org.drools</groupId>
   <artifactId>conyard-example</artifactId>
-  <version>6.4.0-SNAPSHOT</version>
+  <version>1.0-SNAPSHOT</version>
   <properties>
-    <drools.version>6.4.0-SNAPSHOT</drools.version>
-    <chance.version>6.4.0-SNAPSHOT</chance.version>
+    <drools.version>7.5.0.Final</drools.version>
     <jpa.provider>hibernate</jpa.provider>
     <!--jpa.provider>datanucleus</jpa.provider-->
   </properties>
@@ -62,9 +61,9 @@
       <version>${drools.version}</version>
     </dependency>
     <dependency>
-      <groupId>org.drools</groupId>
-      <artifactId>drools-shapes-generator</artifactId>
-      <version>${drools.version}</version>
+      <groupId>org.kie</groupId>
+      <artifactId>kie-shapes-generator</artifactId>
+      <version>${project.version}</version>
     </dependency>
 
 
@@ -81,7 +80,7 @@
     <!-- Empire can be found here: https://github.com/mhgrove/Empire -->
     <dependency>
       <groupId>com.clarkparsia.empire</groupId>
-      <artifactId>empire</artifactId>
+      <artifactId>core</artifactId>
       <exclusions>
         <exclusion>
           <groupId>org.hibernate</groupId>
@@ -99,6 +98,7 @@
     <dependency>
       <groupId>com.clarkparsia.empire</groupId>
       <artifactId>sesame</artifactId>
+      <version>1.0</version>
     </dependency>
     <dependency>
       <groupId>org.openrdf.sesame</groupId>
@@ -254,8 +254,8 @@
       </plugin>
 
       <plugin>
-        <groupId>org.drools</groupId>
-        <artifactId>drools-shapes-generator-plugin</artifactId>
+        <groupId>org.kie</groupId>
+        <artifactId>kie-shapes-generator-plugin</artifactId>
         <version>${project.version}</version>
         <executions>
           <execution>

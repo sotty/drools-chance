@@ -21,19 +21,18 @@
   <modelVersion>4.0.0</modelVersion>
 
   <parent>
-    <groupId>org.drools</groupId>
-    <artifactId>drools-shapes-examples</artifactId>
-    <version>6.4.0-SNAPSHOT</version>
+    <groupId>org.kie</groupId>
+    <artifactId>kie-shapes-examples</artifactId>
+    <version>1.0-SNAPSHOT</version>
   </parent>
 
   <name>Drools :: Semantic Translator Example</name>
 
   <groupId>org.drools</groupId>
   <artifactId>translator-example</artifactId>
-  <version>6.4.0-SNAPSHOT</version>
+  <version>1.0-SNAPSHOT</version>
   <properties>
-    <drools.version>6.4.0-SNAPSHOT</drools.version>
-    <chance.version>6.4.0-SNAPSHOT</chance.version>
+    <drools.version>7.5.0.Final</drools.version>
     <jpa.provider>hibernate</jpa.provider>
     <!--jpa.provider>datanucleus</jpa.provider-->
   </properties>
@@ -57,8 +56,8 @@
   <dependencies>
 
     <dependency>
-      <groupId>org.drools</groupId>
-      <artifactId>drools-shapes-generator</artifactId>
+      <groupId>org.kie</groupId>
+      <artifactId>kie-shapes-generator</artifactId>
       <version>${project.version}</version>
     </dependency>
 
@@ -75,13 +74,14 @@
     <!-- Empire can be found here: https://github.com/mhgrove/Empire -->
     <dependency>
       <groupId>com.clarkparsia.empire</groupId>
-      <artifactId>empire</artifactId>
+      <artifactId>core</artifactId>
     </dependency>
 
 
     <dependency>
       <groupId>com.clarkparsia.empire</groupId>
       <artifactId>sesame</artifactId>
+      <version>1.0</version>
       <scope>test</scope>
     </dependency>
 
@@ -207,9 +207,9 @@
       </plugin>
 
       <plugin>
-        <groupId>org.drools</groupId>
-        <artifactId>drools-shapes-generator-plugin</artifactId>
-        <version>${chance.version}</version>
+        <groupId>org.kie</groupId>
+        <artifactId>kie-shapes-generator-plugin</artifactId>
+        <version>${project.version}</version>
         <executions>
           <execution>
             <phase>generate-sources</phase>

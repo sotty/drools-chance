@@ -1,0 +1,93 @@
+package org.kie.shapes.xsd;
+
+import org.kie.api.runtime.KieSession;
+import org.kie.api.runtime.rule.FactHandle;
+
+import javax.xml.bind.JAXBElement;
+import javax.xml.bind.annotation.XmlType;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+
+public class Jaxplorer {
+
+    private static Map<Class, Collection<String>> declaredCache = new HashMap<>();
+
+    private Object root;
+//    private Collection<FactHandle> handles = new LinkedList<>();
+
+    public Jaxplorer( Object root ) {
+        this.root = root;
+    }
+
+    public void deepInsert( KieSession kSession ) {
+        deepInsert( root, kSession );
+    }
+
+    protected void deepInsert( Object o, KieSession kSession ) {
+        if ( o instanceof JAXBElement ) {
+            kSession.insert( o );
+            deepInsert( ((JAXBElement) o).getValue(), kSession );
+        }
+        XmlType xmlType = o.getClass().getAnnotation( XmlType.class );
+        if ( xmlType  != null ) {
+        	kSession.insert( o );
+            //handles.add( kSession.insert( o ) );
+            for ( String fname : getAllXmlFields(o) ) {
+                try {
+                    if ( fname.startsWith( "_" ) ) {
+                        fname = fname.substring( 1 );
+                    }
+                    String getterName = "get" + fname.substring( 0, 1 ).toUpperCase() + fname.substring( 1 );
+                    Method getter = o.getClass().getMethod( getterName );
+                    Object fieldVal = getter.invoke( o );
+                    if ( fieldVal instanceof Collection ) {
+                        for ( Object x : (Collection) fieldVal ) {
+                            deepInsert( x, kSession );
+                        }
+                    } else {
+                        if ( fieldVal != null ) {
+                            deepInsert( fieldVal, kSession );
+                        }
+                    }
+                } catch ( IllegalAccessException | NoSuchMethodException | InvocationTargetException e ) {
+                    e.printStackTrace();
+                }
+            }
+
+        }
+    }
+
+    private Collection<String> getAllXmlFields( Object o ) {
+        if ( declaredCache.containsKey( o.getClass() ) ) {
+            return declaredCache.get( o.getClass() );
+        }
+
+        List<String> fieldNames = new LinkedList<>();
+
+        Class x = o.getClass();
+        while ( ! x.equals( Object.class ) ) {
+
+            XmlType xmlType = (XmlType) x.getAnnotation( XmlType.class );
+            if ( xmlType != null && xmlType.propOrder().length > 0 && ! xmlType.propOrder()[0].isEmpty() ) {
+                fieldNames.addAll( Arrays.asList( xmlType.propOrder() ) );
+            }
+
+            x = x.getSuperclass();
+        }
+
+//        System.out.println( "Class " + o.getClass() );
+//        for ( String s : fieldNames ) {
+//            System.out.println( "\t >> " + s );
+//        }
+
+        declaredCache.put( o.getClass(), fieldNames );
+        return fieldNames;
+    }
+
+}

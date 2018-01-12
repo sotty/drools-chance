@@ -119,7 +119,7 @@ then
         OWLClassExpression[] ext = java.util.Arrays.copyOf( sups, sups.length + 1);
         ext[ sups.length ] = temp;
 
-        System.out.println(" \t BINDING TO " + ext );
+        //System.out.println(" \t BINDING TO " + ext );
         OWLClassExpression mockDef = factory.getOWLObjectIntersectionOf( ext );
 
     insert( new OWLClassBinding( mockDef.toString(), $klass.toString() ) );
