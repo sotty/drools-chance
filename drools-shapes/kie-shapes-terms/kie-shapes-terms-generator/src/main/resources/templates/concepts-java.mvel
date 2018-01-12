@@ -1,0 +1,66 @@
+package @{packageName};
+
+import java.net.URI;
+
+import org.kie.shapes.terms.ConceptDescriptor;
+import org.kie.shapes.terms.ConceptScheme;
+import org.kie.shapes.terms.Taxonomic;
+
+import @{implClassName};
+
+public enum @{typeName} implements ConceptDescriptor, Taxonomic<@{typeName}> {
+
+    @foreach{ concept : concepts }
+    @{org.kie.semantics.utils.NameUtils.getTermConceptName(concept.code,concept.name)}( "@{concept.code}", "@{concept.name}", "@{concept.uri}" )@end{ ',' };
+
+
+    public static final String schemeName = "@{conceptScheme.schemeName}";
+    public static final String schemeID = "@{conceptScheme.schemeID}";
+    public static final URI schemeURI = URI.create( "@{conceptScheme.schemeURI}" );
+
+	public static final ConceptScheme<@{typeName}> __SCHEME = new @{implClassName}<>( schemeID,
+	                                                                                schemeName,
+	                                                                                schemeURI,
+	                                                                                @{typeName}.class );
+
+    private URI	uri;
+	private String displayName;
+	private String code;
+
+	private @{typeName}[] ancestors;
+
+	@{typeName}( String code, String displayName, String uri, @{typeName}... ancestors ) {
+		this.uri = URI.create( uri );
+		this.code = code;
+		this.displayName = displayName;
+		this.ancestors = ancestors == null ? new @{typeName}[ 0 ] : ancestors;
+	}
+
+
+    @Override
+	public String getName() {
+		return displayName;
+	}
+
+	@Override
+	public String getCode() {
+		return code;
+	}
+
+	@Override
+	public URI getUri() {
+		return uri;
+	}
+
+	@Override
+	public ConceptScheme<@{typeName}> getCodeSystem() {
+		return __SCHEME;
+	}
+
+	public @{typeName}[] getAncestors() {
+		return ancestors;
+	}
+
+}
+
+
