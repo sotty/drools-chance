@@ -18,12 +18,12 @@ package org.kie.semantics.builder.model.compilers;
 
 import org.kie.semantics.builder.model.CompiledOntoModel;
 import org.kie.semantics.builder.model.Concept;
-import org.drools.semantics.builder.model.ModelFactory;
-import org.drools.semantics.builder.model.OntoModel;
-import org.drools.semantics.builder.model.PropertyRelation;
-import org.drools.semantics.builder.model.XSDModel;
-import org.drools.semantics.builder.model.XSDModelImpl;
-import org.drools.semantics.utils.NamespaceUtils;
+import org.kie.semantics.builder.model.ModelFactory;
+import org.kie.semantics.builder.model.OntoModel;
+import org.kie.semantics.builder.model.PropertyRelation;
+import org.kie.semantics.builder.model.XSDModel;
+import org.kie.semantics.builder.model.XSDModelImpl;
+import org.kie.semantics.utils.NamespaceUtils;
 import org.jdom.Element;
 import org.jdom.Namespace;
 import org.w3._2002._07.owl.Thing;

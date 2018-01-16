@@ -1,7 +1,7 @@
 package org.kie.semantics.builder.model.inference;
 
 import org.apache.log4j.Logger;
-import org.drools.semantics.utils.NameUtils;
+import org.kie.semantics.utils.NameUtils;
 import org.kie.semantics.util.IRIUtils;
 import org.semanticweb.owlapi.model.AddAxiom;
 import org.semanticweb.owlapi.model.AxiomType;

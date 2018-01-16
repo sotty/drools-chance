@@ -38,11 +38,12 @@ import java.util.stream.Stream;
 
 public class TerminologyGenerator {
 
-	private static final IRI CONCEPT_SCHEME = IRI.create( "http://www.w3.org/2004/02/skos/core#ConceptScheme" );
-	private static final IRI CONCEPT = IRI.create( "http://www.w3.org/2004/02/skos/core#Concept" );
-	private static final IRI LABEL = IRI.create( "http://www.w3.org/2004/02/skos/core#prefLabel" );
-	private static final IRI NOTATION = IRI.create( "http://www.w3.org/2004/02/skos/core#notation" );
-	private static final IRI IN_SCHEME = IRI.create( "http://www.w3.org/2004/02/skos/core#inScheme" );
+	public static final IRI CONCEPT_SCHEME = IRI.create( "http://www.w3.org/2004/02/skos/core#ConceptScheme" );
+	public static final IRI CONCEPT = IRI.create( "http://www.w3.org/2004/02/skos/core#Concept" );
+	public static final IRI LABEL = IRI.create( "http://www.w3.org/2004/02/skos/core#prefLabel" );
+	public static final IRI NOTATION = IRI.create( "http://www.w3.org/2004/02/skos/core#notation" );
+	public static final IRI IN_SCHEME = IRI.create( "http://www.w3.org/2004/02/skos/core#inScheme" );
+	public static final IRI DENOTES = IRI.create( "http://www.w3.org/ns/lemon/ontolex#denotes" );
 
 	private static final IRI OID = IRI.create( "https://www.hl7.org/oid" );
 
@@ -63,14 +64,14 @@ public class TerminologyGenerator {
 		// build the code systems first
 		Map<URI, ConceptScheme<ConceptDescriptor>> codeSystems;
 		codeSystems = model.individualsInSignature( Imports.INCLUDED )
-		                   .filter( this::isConceptScheme )
+		                   .filter( (i) -> isConceptScheme( i, model )  )
 		                   .map( x -> toScheme( x, model ) )
 		                   .collect( Collectors.toMap( ConceptScheme::getSchemeURI,
 		                                               Function.identity() ) );
 
 		// then the concepts
 		model.individualsInSignature( Imports.INCLUDED )
-		     .filter( this::isConcept )
+		     .filter( (i) -> isConcept( i, model ) )
 		     .forEach( (ind) -> toCode( ind,
 		                                getOrCreateSchemes( ind, model, codeSystems ),
 		                                model ) );
@@ -86,7 +87,7 @@ public class TerminologyGenerator {
 		                     .collect( Collectors.toSet() );
 	}
 
-	private ConceptScheme<ConceptDescriptor> toScheme( OWLNamedIndividual ind, OWLOntology model ) {
+	public ConceptScheme<ConceptDescriptor> toScheme( OWLNamedIndividual ind, OWLOntology model ) {
 		URI uri = getURI( ind );
 		String code = getDataValues( ind, model, NOTATION ).findFirst()
 		                                                   .orElse( getAnnotationValues( ind, model, OID ).findFirst()
@@ -96,7 +97,7 @@ public class TerminologyGenerator {
 		return new MutableConceptScheme( uri, code, label );
 	}
 
-	private ConceptDescriptor toCode( OWLNamedIndividual ind,
+	public ConceptDescriptor toCode( OWLNamedIndividual ind,
 	                                  Collection<ConceptScheme<ConceptDescriptor>> schemes,
 	                                  OWLOntology model ) {
 		if ( schemes.size() >= 2 ) {
@@ -120,14 +121,15 @@ public class TerminologyGenerator {
 		return URI.create( x.getIRI().toString() );
 	}
 
-	private boolean isConcept( OWLNamedIndividual ind ) {
-		return is( ind, CONCEPT );
+	private boolean isConcept( OWLNamedIndividual ind, OWLOntology model ) {
+		return is( ind, CONCEPT, model );
 	}
 
-	private boolean isConceptScheme( OWLNamedIndividual ind ) {
-		return is( ind, CONCEPT_SCHEME);
+	private boolean isConceptScheme( OWLNamedIndividual ind, OWLOntology model ) {
+		return is( ind, CONCEPT_SCHEME, model );
     }
-	private boolean is( OWLNamedIndividual ind, IRI type ) {
+
+	private boolean is( OWLNamedIndividual ind, IRI type, OWLOntology model ) {
 		return EntitySearcher.getTypes( ind, model.importsClosure() )
 		              .anyMatch( (kls) -> ! kls.isAnonymous() && kls.asOWLClass().getIRI().equals( type ) );
 	}

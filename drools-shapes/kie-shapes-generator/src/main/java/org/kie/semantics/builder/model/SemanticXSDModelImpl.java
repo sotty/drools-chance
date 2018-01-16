@@ -16,7 +16,7 @@
 
 package org.kie.semantics.builder.model;
 
-import org.drools.semantics.utils.NameUtils;
+import org.kie.semantics.utils.NameUtils;
 import org.jdom.Namespace;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -139,27 +139,29 @@ public class SemanticXSDModelImpl extends XSDModelImpl implements SemanticXSDMod
 
     public boolean streamBindings( File folder ) {
         try {
-            for ( String ns : prefixMap.keySet() ) {
+
+
+            for ( String prefix : prefixMap.keySet() ) {
                 FileOutputStream os;
-                Namespace namespace = prefixMap.get( ns );
-                if ( "xsd".equals( ns ) || "xsi".equals( ns ) ) {
+                Namespace namespace = prefixMap.get( prefix );
+
+	            if ( "owl".equals( prefix ) ) {
+		            os = new FileOutputStream( folder + File.separator + "global.xjb" );
+	            } else if ( knownPrefixes.contains( prefix ) ) {
                     continue;
-                }
-                if ( "owl".equals( ns ) ) {
-                    os = new FileOutputStream( folder + File.separator + "global.xjb" );
                 } else {
                     String path = folder.getPath() + File.separator + NameUtils.namespaceURIToPackage( namespace.getURI() ) + ".xjb";
                     File target = new File( path );
-                    target = checkForBindingOverride( target );
-
+                    if ( checkForBindingOverride( target ) ) {
+                    	System.err.println( "Discarding " + target.getPath() );
+                    	System.err.println( compactXML( getBindings( namespace.getURI() ) ) );
+                    	continue;
+                    }
                     os = new FileOutputStream( target );
                 }
 
-	            Document bindings = getBindings( prefixMap.get( ns ).getURI() );
-
-	            String tgtSchemaLoc = schemaLocations.get( namespace );
-
-	            checkSchemaLocationOverride( bindings, tgtSchemaLoc );
+	            Document bindings = getBindings( namespace.getURI() );
+	            checkSchemaLocationOverride( bindings, schemaLocations.get( namespace ) );
 
 	            os.write( compactXML( bindings ).getBytes() );
 	            os.flush();
@@ -191,16 +193,8 @@ public class SemanticXSDModelImpl extends XSDModelImpl implements SemanticXSDMod
         }
     }
 
-    private File checkForBindingOverride( File tgt ) {
-        int j = 0;
-        File target = tgt;
-        String path = target.getPath();
-
-        while ( target.exists() ) {
-            target = new File( path.replace( ".xjb", "_" + ( j++ ) + ".xjb" ) );
-        }
-
-        return target;
+    private boolean checkForBindingOverride( File tgt ) {
+        return tgt.exists();
     }
 
     public String getIndex() {

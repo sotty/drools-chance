@@ -2,23 +2,23 @@ package org.drools.shapes;
 
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.project.MavenProject;
+import org.jvnet.hyperjaxb3.maven2.Hyperjaxb3Mojo;
 import org.kie.semantics.builder.DLFactoryConfiguration;
 import org.kie.semantics.builder.model.Concept;
-import org.drools.semantics.builder.model.DRLModel;
-import org.drools.semantics.builder.model.JarModel;
-import org.drools.semantics.builder.model.MetaclassModel;
-import org.drools.semantics.builder.model.ModelFactory;
-import org.drools.semantics.builder.model.OntoModel;
-import org.drools.semantics.builder.model.RecognitionRuleModel;
+import org.kie.semantics.builder.model.DRLModel;
+import org.kie.semantics.builder.model.JarModel;
+import org.kie.semantics.builder.model.MetaclassModel;
+import org.kie.semantics.builder.model.ModelFactory;
+import org.kie.semantics.builder.model.OntoModel;
+import org.kie.semantics.builder.model.RecognitionRuleModel;
 import org.kie.semantics.builder.model.SemanticXSDModel;
-import org.drools.semantics.builder.model.compilers.MetaclassModelCompiler;
-import org.drools.semantics.builder.model.compilers.ModelCompiler;
-import org.drools.semantics.builder.model.compilers.ModelCompilerFactory;
-import org.drools.semantics.builder.model.compilers.RecognitionRuleCompiler;
-import org.drools.semantics.builder.model.compilers.SemanticXSDModelCompiler;
-import org.drools.semantics.utils.NameUtils;
-import org.drools.semantics.utils.NamespaceUtils;
-import org.jvnet.hyperjaxb3.maven2.Hyperjaxb3Mojo;
+import org.kie.semantics.builder.model.compilers.MetaclassModelCompiler;
+import org.kie.semantics.builder.model.compilers.ModelCompiler;
+import org.kie.semantics.builder.model.compilers.ModelCompilerFactory;
+import org.kie.semantics.builder.model.compilers.RecognitionRuleCompiler;
+import org.kie.semantics.builder.model.compilers.SemanticXSDModelCompiler;
+import org.kie.semantics.utils.NameUtils;
+import org.kie.semantics.utils.NamespaceUtils;
 import org.semanticweb.owlapi.model.IRI;
 import org.semanticweb.owlapi.model.OWLAxiom;
 import org.semanticweb.owlapi.util.InferredAxiomGenerator;
@@ -42,6 +42,7 @@ import javax.xml.xpath.XPathExpression;
 import javax.xml.xpath.XPathFactory;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -338,8 +339,9 @@ public class OntoModelCompiler {
                     continue;
                 }
                 try {
-	                String targetFileName = pack.replaceAll( "\\.", regexSeparator );
-	                success &= streamModel( getJavaDir(), targetFileName, mcompiler.buildFactory(pack).getBytes() );
+                	String targetPath = getJavaDir() + File.separator + pack.replaceAll( "\\.", regexSeparator );
+	                String targetFileName = "MetaFactory.java";
+	                success &= streamModel( new File( targetPath ), targetFileName, mcompiler.buildFactory(pack).getBytes() );
                 } catch (RuntimeException re) {
                     re.printStackTrace();
                 }
@@ -376,8 +378,6 @@ public class OntoModelCompiler {
         SemanticXSDModelCompiler xcompiler = (SemanticXSDModelCompiler) ModelCompilerFactory.newModelCompiler( ModelFactory.CompileTarget.XSDX );
         SemanticXSDModel xmlModel = (SemanticXSDModel) xcompiler.compile( model );
 
-        xmlModel.streamAll( System.err );
-
         boolean success = false;
         try {
             success = xmlModel.stream( getMetaInfDir() );
@@ -412,7 +412,7 @@ public class OntoModelCompiler {
         for ( org.jdom.Namespace ns : xmlModel.getNamespaces() ) {
 	        String packageName = NameUtils.namespaceURIToPackage( ns.getURI() );
 	        if ( packageName != null ) {
-		        File out = new File( folder.getPath() + File.separator + packageName.replace( '.', File.separatorChar ) + File.separator + "package-info.java" );
+		        File out = new File( javaDir.getPath() + File.separator + packageName.replace( '.', File.separatorChar ) + File.separator + "package-info.java" );
 		        if ( !out.exists() ) {
 			        success &= streamModel( out.getParentFile(),
 					             out.getName(),
@@ -467,6 +467,9 @@ public class OntoModelCompiler {
 	                               final byte[] tgtModel ) {
 		FileOutputStream fos;
 		try {
+			if ( ! targetPath.exists() ) {
+				targetPath.mkdirs();
+			}
 			fos = new FileOutputStream( new File( targetPath, targetFileName ) );
 			fos.write( tgtModel );
 			fos.flush();
@@ -607,6 +610,10 @@ public class OntoModelCompiler {
 
 
     public boolean mojo( List<String> args, MOJO_VARIANTS variant ) {
+        return mojo( args, variant, null );
+    }
+
+    public boolean mojo( List<String> args, MOJO_VARIANTS variant, ClassLoader loader ) {
         boolean success = false;
         try {
             File pom = new File( folder.getPath() + File.separator + "pom.xml" );
@@ -619,8 +626,10 @@ public class OntoModelCompiler {
 
             final Hyperjaxb3Mojo mojo = new Hyperjaxb3Mojo();
             mojo.setVerbose( true );
+            mojo.setNoFileHeader( true );
 
             mojo.setBindingDirectory( getMetaInfDir() );
+            mojo.setBindingIncludes( new String[] { "*.xjb", "*.episode" } );
             mojo.setSchemaDirectory( getMetaInfDir() );
 
             int j = 0;
@@ -637,7 +646,7 @@ public class OntoModelCompiler {
             }
             mojo.setBindingExcludes( excludedBindings );
 
-
+			mojo.setEpisodeFile( new File( getMetaInfDir().getPath() + File.separator + model.getName() + ".episode"  ) );
 
             mojo.setGenerateDirectory( getXjcDir() );
             mojo.setExtension(true);
@@ -655,11 +664,11 @@ public class OntoModelCompiler {
                     mojo.persistenceUnitName = (String) expr.evaluate( dox, XPathConstants.STRING );
 
                 } catch ( Exception e ) {
-                    mojo.persistenceXml = new File( tryGetMetaInfDir() + File.separator + "persistence-template-hibernate.xml" );
+                    mojo.persistenceXml = new File( getMetaInfDir().getPath() + File.separator + "persistence-template-hibernate.xml" );
                     mojo.persistenceUnitName = model.getName();
                 }
             } else {
-                mojo.persistenceXml = new File( tryGetMetaInfDir() + File.separator + "persistence-template-hibernate.xml" );
+                mojo.persistenceXml = new File( getMetaInfDir().getPath() + File.separator + "persistence-template-hibernate.xml" );
                 mojo.persistenceUnitName = model.getName();
             }
 
@@ -668,10 +677,20 @@ public class OntoModelCompiler {
             mojo.setCleanPackageDirectories( false );
             mojo.setProject( mp );
 
-            mojo.setArgs( args );
+            List<String> extArgs = new ArrayList<>( args );
+            extArgs.add( "-npa" );
+            mojo.setArgs( extArgs );
 
             mojo.setForceRegenerate( true );
-            mojo.execute();
+
+            if ( loader != null ) {
+            	ClassLoader current = Thread.currentThread().getContextClassLoader();
+            	Thread.currentThread().setContextClassLoader( loader );
+	            mojo.execute();
+	            Thread.currentThread().setContextClassLoader( current );
+            } else {
+            	mojo.execute();
+            }
             success = true;
         } catch (MojoExecutionException e) {
             e.printStackTrace();
@@ -681,7 +700,7 @@ public class OntoModelCompiler {
 
 
 
-    public Optional<File> tryGetMetaInfDir() {
+	public Optional<File> tryGetMetaInfDir() {
     	return tryGetFolder( metaInfDir );
     }
 

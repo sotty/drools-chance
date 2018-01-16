@@ -48,6 +48,24 @@
       <artifactId>maven-plugin-api</artifactId>
     </dependency>
 
+    <dependency>
+      <groupId>org.apache.maven.plugin-tools</groupId>
+      <artifactId>maven-plugin-annotations</artifactId>
+    </dependency>
   </dependencies>
+
+
+
+  <build>
+
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-plugin-plugin</artifactId>
+      </plugin>
+    </plugins>
+
+  </build>
+
 
 </project>

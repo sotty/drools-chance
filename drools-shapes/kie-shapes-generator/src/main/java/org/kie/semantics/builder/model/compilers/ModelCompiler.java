@@ -17,7 +17,7 @@
 package org.kie.semantics.builder.model.compilers;
 
 import org.kie.semantics.builder.model.CompiledOntoModel;
-import org.drools.semantics.builder.model.OntoModel;
+import org.kie.semantics.builder.model.OntoModel;
 
 public interface ModelCompiler {
 

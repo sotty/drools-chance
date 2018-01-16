@@ -16,7 +16,7 @@
 
 package org.kie.semantics.builder;
 
-import org.drools.semantics.builder.model.ModelFactory;
+import org.kie.semantics.builder.model.ModelFactory;
 import org.kie.internal.io.ResourceFactory;
 import org.mvel2.templates.SimpleTemplateRegistry;
 import org.mvel2.templates.TemplateCompiler;
@@ -29,7 +29,7 @@ public class DLTemplateManager {
 
     private static final String SEP = "/";
     
-    public static final String BASE_PACK = "org.drools.semantics";
+    public static final String BASE_PACK = "org.kie.semantics";
     protected static final String RESOURCE_PATH = BASE_PACK.replace( ".", SEP );
     protected static final String TEMPLATE_PATH = SEP + RESOURCE_PATH + SEP + "templates" + SEP;
 

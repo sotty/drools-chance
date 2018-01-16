@@ -1,5 +1,6 @@
 package org.kie.semantics.builder.reasoner;
 
+import org.apache.lucene.index.Term;
 import org.drools.compiler.lang.DrlDumper;
 import org.drools.compiler.lang.api.AccumulateDescrBuilder;
 import org.drools.compiler.lang.api.CEDescrBuilder;
@@ -17,20 +18,20 @@ import org.drools.core.base.evaluators.IsAEvaluatorDefinition;
 import org.drools.core.base.evaluators.Operator;
 import org.drools.core.factmodel.traits.Traitable;
 import org.drools.core.spi.Evaluator;
-import org.drools.semantics.NamedIndividual;
-import org.kie.semantics.builder.model.Concept;
-import org.drools.semantics.builder.model.OntoModel;
-import org.drools.semantics.builder.model.PropertyRelation;
-import org.drools.semantics.utils.NameUtils;
-import org.drools.shapes.terms.ConceptDescriptor;
-import org.drools.shapes.terms.KnownTerms;
-import org.drools.shapes.terms.vocabulary.CodeSystem;
 import org.kie.api.builder.Message;
 import org.kie.api.builder.Results;
 import org.kie.api.definition.type.PropertyReactive;
 import org.kie.api.io.ResourceType;
 import org.kie.internal.builder.conf.EvaluatorOption;
 import org.kie.internal.utils.KieHelper;
+import org.kie.semantics.NamedIndividual;
+import org.kie.semantics.builder.model.Concept;
+import org.kie.semantics.builder.model.OntoModel;
+import org.kie.semantics.builder.model.PropertyRelation;
+import org.kie.semantics.utils.NameUtils;
+import org.kie.shapes.terms.ConceptDescriptor;
+import org.kie.shapes.terms.ConceptScheme;
+import org.kie.shapes.terms.generator.TerminologyGenerator;
 import org.semanticweb.owlapi.model.IRI;
 import org.semanticweb.owlapi.model.OWLClass;
 import org.semanticweb.owlapi.model.OWLClassExpression;
@@ -65,12 +66,14 @@ import org.semanticweb.owlapi.model.OWLQuantifiedObjectRestriction;
 import org.semanticweb.owlapi.model.OWLQuantifiedRestriction;
 import org.semanticweb.owlapi.search.EntitySearcher;
 import org.w3._2002._07.owl.Thing;
+import thewebsemantic.vocabulary.Skos;
 
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -80,8 +83,6 @@ import static org.kie.semantics.util.IRIUtils.fragmentOf;
 
 public class APIRecognitionRuleBuilder {
 
-    private static final IRI EXPRESSES = IRI.create( KnownTerms.EXPRESSES.getUri() );
-    private static final IRI IN_SCHEME = IRI.create( KnownTerms.IN_SCHEME.getUri() );
 
     private static int counter = 0;
 
@@ -275,19 +276,18 @@ public class APIRecognitionRuleBuilder {
         nested = ((OWLNaryBooleanClassExpression) nested ).getOperandsAsList().get( 0 );
         OWLObjectOneOf ones = (OWLObjectOneOf) nested;
 
+        TerminologyGenerator gen = new TerminologyGenerator( ontology, false );
+
         OWLNamedIndividual concept = (OWLNamedIndividual) ones.individuals().findFirst().orElseThrow( IllegalStateException::new );
-        EntitySearcher.getObjectPropertyValues( concept, odf.getOWLObjectProperty( IN_SCHEME ), ontology )
-                      .filter( OWLNamedIndividual.class::isInstance )
-                      .map( OWLNamedIndividual.class::cast )
-                      .forEach( (scheme) -> {
-            CodeSystem cs = build( scheme, ontology );
-            res.append( NameUtils.namespaceURIToPackage( scheme.getIRI().getNamespace() ) )
-		                        .append( "." )
-	                            .append( NameUtils.getTermCodeSystemName( cs.getCodeSystemName() ) )
-		                        .append( "." );
-        });
-        ConceptDescriptor code = ConceptDescriptor.of( concept.getIRI().toString() );
-        res.append( NameUtils.getTermConceptName( code.getCode(), code.getDisplayName() ) );
+	    OWLNamedIndividual scheme = EntitySearcher.getObjectPropertyValues( concept, odf.getOWLObjectProperty( TerminologyGenerator.IN_SCHEME ), ontology )
+	                  .filter( OWLNamedIndividual.class::isInstance )
+	                  .map( OWLNamedIndividual.class::cast ).findAny().orElseThrow( IllegalStateException::new );
+
+	    ConceptScheme<ConceptDescriptor> sch = gen.toScheme( scheme, ontology );
+	    ConceptDescriptor cd = gen.toCode( concept, Collections.singleton( sch ), ontology );
+		res.append( NameUtils.getTermCodeSystemName( sch.getSchemeName() ) )
+		   .append( "." )
+		   .append( NameUtils.getTermConceptName( cd.getCode(), cd.getName() ) );
 
         return res.toString();
     }
@@ -306,7 +306,7 @@ public class APIRecognitionRuleBuilder {
         }
         OWLObjectSomeValuesFrom some = (OWLObjectSomeValuesFrom) subArgs.get( 0 );
 
-	    return some.getProperty().asOWLObjectProperty().getIRI().equals( EXPRESSES );
+	    return some.getProperty().asOWLObjectProperty().getIRI().equals( TerminologyGenerator.DENOTES );
     }
 
     protected String isA( String subj, boolean positive, OWLClassExpression arg ) {
@@ -662,29 +662,5 @@ public class APIRecognitionRuleBuilder {
         public void readExternal( ObjectInput objectInput ) throws IOException, ClassNotFoundException {}
     }
 
-
-	public static CodeSystem build( OWLNamedIndividual ind, OWLOntology model ) {
-		OWLDataFactory odf = model.getOWLOntologyManager().getOWLDataFactory();
-		CodeSystem cs = new CodeSystem();
-		cs.setCodeSystemUri( ind.getIRI().toString() );
-
-		EntitySearcher.getDataPropertyValues( ind, odf.getOWLDataProperty( IRI.create( KnownTerms.NOTATION.getUri() ) ), model )
-		              .forEach( ( val ) -> cs.setCodeSystemId( val.getLiteral() ) );
-
-		if ( cs.getCodeSystemName() == null ) {
-			EntitySearcher.getAnnotations( ind, model, odf.getOWLAnnotationProperty( IRI.create( KnownTerms.LABEL.getUri() ) ) )
-			              .forEach( ( lab ) -> cs.setCodeSystemName( lab.getValue().asLiteral().get().getLiteral() ) );
-		}
-		if ( cs.getCodeSystemName() == null ) {
-			cs.setCodeSystemName( ind.getIRI().getRemainder().get().replaceAll( "\\.", "_" ) );
-		}
-
-		if ( cs.getCodeSystemId() == null ) {
-			cs.setCodeSystemId( URI.create( cs.getCodeSystemUri() ).getFragment() );
-		}
-
-		return cs;
-
-	}
 
 }

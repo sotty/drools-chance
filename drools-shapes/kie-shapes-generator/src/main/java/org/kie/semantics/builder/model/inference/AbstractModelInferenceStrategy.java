@@ -16,11 +16,11 @@
 
 package org.kie.semantics.builder.model.inference;
 
-import org.kie.semantics.builder.DLFactoryConfiguration;
-import org.drools.semantics.builder.model.ModelFactory;
-import org.drools.semantics.builder.model.OntoModel;
-import org.kie.semantics.util.IRIUtils;
 import org.kie.api.io.Resource;
+import org.kie.semantics.builder.DLFactoryConfiguration;
+import org.kie.semantics.builder.model.ModelFactory;
+import org.kie.semantics.builder.model.OntoModel;
+import org.kie.semantics.util.IRIUtils;
 import org.semanticweb.owlapi.model.OWLOntology;
 import org.semanticweb.owlapi.reasoner.OWLReasoner;
 

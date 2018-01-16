@@ -41,12 +41,14 @@
     <dependency>
       <groupId>org.kie</groupId>
       <artifactId>kie-shapes-utilities</artifactId>
-      <version>${project.version}</version>
     </dependency>
-  <dependency>
+    <dependency>
       <groupId>org.kie</groupId>
       <artifactId>kie-shapes-terms-api</artifactId>
-      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.kie</groupId>
+      <artifactId>kie-shapes-terms-generator</artifactId>
     </dependency>
 
     <!--dependency>
@@ -82,7 +84,6 @@
       <artifactId>core</artifactId>
     </dependency>
 
-
     <dependency>
       <groupId>net.sourceforge.owlapi</groupId>
       <artifactId>owlapi-api</artifactId>
@@ -94,8 +95,8 @@
 
 
     <dependency>
-        <groupId>net.sourceforge.owlapi</groupId>
-        <artifactId>org.semanticweb.hermit</artifactId>
+      <groupId>net.sourceforge.owlapi</groupId>
+      <artifactId>org.semanticweb.hermit</artifactId>
     </dependency>
 
     <dependency>

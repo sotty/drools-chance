@@ -28,6 +28,7 @@ import javax.persistence.CascadeType;
 import javax.persistence.OneToMany;
 import javax.persistence.ManyToOne;
 import javax.persistence.Basic;
+import javax.persistence.FetchType;
 
 
 // @{iri}
@@ -38,7 +39,7 @@ import javax.persistence.Basic;
 @thewebsemantic.RdfType( "@{iri}}" )
 @org.drools.core.factmodel.traits.Trait
 @org.kie.api.definition.type.PropertyReactive
-public interface @{name} extends @if{ ! standalone } org.drools.semantics.Thing, @end{} @if{ traiting } org.drools.core.factmodel.traits.Thing, @end{} org.drools.core.metadata.Metadatable  @if{ implInterface != null} , @{ implInterface } @end{}
+public interface @{name} extends @if{ ! standalone } org.kie.semantics.Thing, @end{} @if{ traiting } org.drools.core.factmodel.traits.Thing, @end{} org.drools.core.metadata.Metadatable  @if{ implInterface != null} , @{ implInterface } @end{}
                                  @if{ superConcepts.size > 0 } , @foreach{ sup : superConcepts } @{sup.package}.@{compactUpperCase( sup.name ) } @end{','} @end{}
 {
 
@@ -55,9 +56,9 @@ public interface @{name} extends @if{ ! standalone } org.drools.semantics.Thing,
         @if{ prop.target.primitive }
             @Basic( )
         @elseif{ prop.maxCard == null || prop.maxCard > 1 }
-            @OneToMany( cascade = CascadeType.ALL )
+            @OneToMany( cascade = CascadeType.ALL, fetch = FetchType.EAGER )
         @else{}
-            @ManyToOne( cascade = CascadeType.ALL )
+            @ManyToOne( cascade = CascadeType.ALL, fetch = FetchType.EAGER )
         @end{}
     @end{}
     public

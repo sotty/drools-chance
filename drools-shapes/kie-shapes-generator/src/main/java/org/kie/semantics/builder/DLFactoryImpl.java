@@ -16,11 +16,11 @@
 
 package org.kie.semantics.builder;
 
-import org.drools.semantics.builder.model.OntoModel;
+import org.kie.semantics.builder.model.OntoModel;
 import org.kie.semantics.builder.model.inference.DelegateInferenceStrategy;
-import org.drools.semantics.builder.model.inference.ModelInferenceStrategy;
+import org.kie.semantics.builder.model.inference.ModelInferenceStrategy;
 import org.kie.semantics.util.IRIUtils;
-import org.drools.semantics.utils.NameUtils;
+import org.kie.semantics.utils.NameUtils;
 import org.kie.api.io.Resource;
 import org.semanticweb.owlapi.apibinding.OWLManager;
 import org.semanticweb.owlapi.io.OWLOntologyDocumentSource;

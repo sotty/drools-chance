@@ -17,8 +17,8 @@
 package org.kie.semantics.builder;
 
 
-import org.drools.semantics.builder.model.OntoModel;
 import org.kie.api.io.Resource;
+import org.kie.semantics.builder.model.OntoModel;
 import org.semanticweb.owlapi.model.OWLOntology;
 
 import java.util.Map;

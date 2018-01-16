@@ -6,7 +6,7 @@ import com.sun.tools.xjc.model.CPluginCustomization;
 import com.sun.tools.xjc.outline.ClassOutline;
 import com.sun.tools.xjc.outline.Outline;
 import org.drools.core.metadata.MetadataHolder;
-import org.drools.semantics.builder.model.compilers.SemanticXSDModelCompilerImpl;
+import org.kie.semantics.builder.model.compilers.SemanticXSDModelCompilerImpl;
 import org.xml.sax.ErrorHandler;
 import org.xml.sax.SAXException;
 

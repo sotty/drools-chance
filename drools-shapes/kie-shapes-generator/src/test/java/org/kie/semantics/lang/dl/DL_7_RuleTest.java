@@ -20,13 +20,13 @@ import org.drools.compiler.lang.DrlDumper;
 import org.drools.compiler.lang.api.DescrFactory;
 import org.drools.compiler.lang.api.PackageDescrBuilder;
 import org.drools.core.io.impl.ByteArrayResource;
-import org.drools.semantics.NamedIndividual;
+import org.kie.semantics.NamedIndividual;
 import org.kie.semantics.builder.DLFactory;
 import org.kie.semantics.builder.DLFactoryBuilder;
 import org.kie.semantics.builder.DLFactoryConfiguration;
-import org.drools.semantics.builder.model.OntoModel;
-import org.drools.semantics.builder.reasoner.APIRecognitionRuleBuilder;
-import org.drools.semantics.builder.reasoner.DLogicTransformer;
+import org.kie.semantics.builder.model.OntoModel;
+import org.kie.semantics.builder.reasoner.APIRecognitionRuleBuilder;
+import org.kie.semantics.builder.reasoner.DLogicTransformer;
 import org.junit.Test;
 import org.kie.api.KieBase;
 import org.kie.api.KieBaseConfiguration;
@@ -96,7 +96,7 @@ public class DL_7_RuleTest {
                                                                                            DLFactoryConfiguration.defaultAxiomGenerators ) );
 
         String drl2 = "package t.x  " +
-                "import org.drools.semantics.NamedIndividual; " +
+                "import org.kie.semantics.NamedIndividual; " +
                 "" +
                 "rule Init when  " +
                 "then  " +
@@ -181,7 +181,7 @@ public class DL_7_RuleTest {
                      ")";
 
         String drl2 = "package t.x \n" +
-                      "import org.drools.semantics.NamedIndividual;\n" +
+                      "import org.kie.semantics.NamedIndividual;\n" +
                       "" +
                       "rule Init when \n" +
                       "then \n" +
@@ -271,7 +271,7 @@ public class DL_7_RuleTest {
                 "\n";
 
         String drl2 = "package t.x; \n" +
-                "import org.drools.semantics.NamedIndividual; \n" +
+                "import org.kie.semantics.NamedIndividual; \n" +
                 "" +
                 "declare NamedIndividual end\n" +
                 "" +
@@ -435,7 +435,7 @@ public class DL_7_RuleTest {
                      "\n";
 
         String drl2 = "package t.x; \n" +
-                      "import org.drools.semantics.NamedIndividual; \n" +
+                      "import org.kie.semantics.NamedIndividual; \n" +
                       "import org.w3._2002._07.owl.Thing; \n" +
                       "" +
                       "declare NamedIndividual end\n" +
@@ -559,7 +559,7 @@ public class DL_7_RuleTest {
                      "</rdf:RDF>\n";
 
         String drl2 = "package t.x; \n" +
-                      "import org.drools.semantics.NamedIndividual; \n" +
+                      "import org.kie.semantics.NamedIndividual; \n" +
                       "import org.w3._2002._07.owl.Thing; \n" +
                       "" +
                       "declare NamedIndividual end\n" +
@@ -642,7 +642,7 @@ public class DL_7_RuleTest {
                      "</rdf:RDF>";
 
         String drl2 = "package t.x; \n" +
-                      "import org.drools.semantics.NamedIndividual; \n" +
+                      "import org.kie.semantics.NamedIndividual; \n" +
                       "import org.w3._2002._07.owl.Thing; \n" +
                       "" +
                       "declare NamedIndividual end\n" +
@@ -698,9 +698,11 @@ public class DL_7_RuleTest {
 
                      "Declaration(Class(easy:AgeObservation)) " +
                      "Declaration(Class(easy:Observation)) " +
+                     "Declaration(NamedIndividual(easy:sch)) " +
                      "Declaration(NamedIndividual(easy:person_age)) " +
+                     "ObjectPropertyAssertion(<http://www.w3.org/2004/02/skos/core#inScheme> easy:person_age easy:sch) " +
                      "DataPropertyAssertion(<http://www.w3.org/2004/02/skos/core#notation> easy:person_age \"age\"^^xsd:string) " +
-                     "EquivalentClasses(easy:AgeObservation ObjectIntersectionOf(ObjectSomeValuesFrom(<easy:code> ObjectHasValue(<http://edu.mayo.cts2/terms-metamodel/terms#expresses> easy:person_age)) easy:Observation)) " +
+                     "EquivalentClasses(easy:AgeObservation ObjectIntersectionOf(ObjectSomeValuesFrom(<easy:code> ObjectHasValue(<http://www.w3.org/ns/lemon/ontolex#denotes> easy:person_age)) easy:Observation)) " +
                      "SubClassOf(easy:BiologicalProcess easy:Process) " +
                      ")";
 
@@ -713,7 +715,7 @@ public class DL_7_RuleTest {
 
         String drl0 = new APIRecognitionRuleBuilder( ontoModel ).setRedeclare( true ).setUseMetaClass( false ).createDRL( false );
 
-        assertTrue( drl0.contains( "this#test.RootThing.code denotes Person_Age" ) );
+        assertTrue( drl0.contains( "this#test.RootThing.code denotes Sch.Person_Age" ) );
     }
 
 

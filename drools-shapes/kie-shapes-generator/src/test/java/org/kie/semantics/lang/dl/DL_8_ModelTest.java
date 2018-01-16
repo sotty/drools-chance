@@ -27,21 +27,21 @@ import org.kie.semantics.builder.DLFactory;
 import org.kie.semantics.builder.DLFactoryBuilder;
 import org.kie.semantics.builder.DLFactoryConfiguration;
 import org.kie.semantics.builder.model.Concept;
-import org.drools.semantics.builder.model.DRLModel;
-import org.drools.semantics.builder.model.GraphModel;
-import org.drools.semantics.builder.model.JarModel;
-import org.drools.semantics.builder.model.JavaInterfaceModel;
-import org.drools.semantics.builder.model.JavaInterfaceModelImpl;
-import org.drools.semantics.builder.model.ModelFactory;
-import org.drools.semantics.builder.model.OntoModel;
-import org.drools.semantics.builder.model.PropertyRelation;
+import org.kie.semantics.builder.model.DRLModel;
+import org.kie.semantics.builder.model.GraphModel;
+import org.kie.semantics.builder.model.JarModel;
+import org.kie.semantics.builder.model.JavaInterfaceModel;
+import org.kie.semantics.builder.model.JavaInterfaceModelImpl;
+import org.kie.semantics.builder.model.ModelFactory;
+import org.kie.semantics.builder.model.OntoModel;
+import org.kie.semantics.builder.model.PropertyRelation;
 import org.kie.semantics.builder.model.SemanticXSDModel;
-import org.drools.semantics.builder.model.WorkingSetModel;
-import org.drools.semantics.builder.model.XSDModel;
-import org.drools.semantics.builder.model.compilers.ModelCompiler;
-import org.drools.semantics.builder.model.compilers.ModelCompilerFactory;
-import org.drools.semantics.builder.model.compilers.XSDModelCompiler;
-import org.drools.semantics.util.SemanticWorkingSetConfigData;
+import org.kie.semantics.builder.model.WorkingSetModel;
+import org.kie.semantics.builder.model.XSDModel;
+import org.kie.semantics.builder.model.compilers.ModelCompiler;
+import org.kie.semantics.builder.model.compilers.ModelCompilerFactory;
+import org.kie.semantics.builder.model.compilers.XSDModelCompiler;
+import org.kie.semantics.util.SemanticWorkingSetConfigData;
 import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
@@ -289,7 +289,7 @@ public class DL_8_ModelTest {
     @Test
     @Ignore //visualization test
     public void testGraphModelGeneration() {
-//        String source = "org/drools/semantics/lang/dl/kmr2_mini.owl";
+//        String source = "org.kie.semantics/lang/dl/kmr2_mini.owl";
         String source = "ontologies/kmr2" + File.separator + "kmr2_mini.owl";
         Resource res = ResourceFactory.newClassPathResource( source );
         OntoModel results = factory.buildModel("ontologies/kmr2", res, DLFactoryConfiguration.newConfiguration( OntoModel.Mode.HIERARCHY ) );

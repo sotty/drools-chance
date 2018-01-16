@@ -26,18 +26,18 @@
   <globalBindings localScoping="toplevel" underscoreBinding="asCharInWord" enableJavaNamingConventions="true" >
     <serializable/>
     <xjc:simple/>
-    <javaType name="java.util.Date" parseMethod="org.drools.semantics.utils.NameUtils.unmarshalDate" printMethod="org.drools.semantics.utils.NameUtils.marshalDate" xmlType="xsd:date"/>
-    <javaType name="java.util.Date" parseMethod="org.drools.semantics.utils.NameUtils.unmarshalDate" printMethod="org.drools.semantics.utils.NameUtils.marshalDate" xmlType="xsd:dateTime"/>
-    <javaType name="java.util.Date" parseMethod="org.drools.semantics.utils.NameUtils.unmarshalDate" printMethod="org.drools.semantics.utils.NameUtils.marshalDate" xmlType="xsd:time"/>
-    <javaType name="org.drools.semantics.Literal" hasNsContext="true"
+    <javaType name="java.util.Date" parseMethod="org.kie.semantics.utils.NameUtils.unmarshalDate" printMethod="org.kie.semantics.utils.NameUtils.marshalDate" xmlType="xsd:date"/>
+    <javaType name="java.util.Date" parseMethod="org.kie.semantics.utils.NameUtils.unmarshalDate" printMethod="org.kie.semantics.utils.NameUtils.marshalDate" xmlType="xsd:dateTime"/>
+    <javaType name="java.util.Date" parseMethod="org.kie.semantics.utils.NameUtils.unmarshalDate" printMethod="org.kie.semantics.utils.NameUtils.marshalDate" xmlType="xsd:time"/>
+    <javaType name="org.kie.semantics.Literal" hasNsContext="true"
               xmlType="xsd:anySimpleType"
-              parseMethod="org.drools.semantics.utils.LiteralDatatypeConverter.parseLiteral"
-              printMethod="org.drools.semantics.utils.LiteralDatatypeConverter.printLiteral"
+              parseMethod="org.kie.semantics.utils.LiteralDatatypeConverter.parseLiteral"
+              printMethod="org.kie.semantics.utils.LiteralDatatypeConverter.printLiteral"
         />
     <javaType name="java.net.URI" hasNsContext="true"
               xmlType="xsd:anyURI"
-              parseMethod="org.drools.semantics.utils.LiteralDatatypeConverter.parseURI"
-              printMethod="org.drools.semantics.utils.LiteralDatatypeConverter.printURI"
+              parseMethod="org.kie.semantics.utils.LiteralDatatypeConverter.parseURI"
+              printMethod="org.kie.semantics.utils.LiteralDatatypeConverter.printURI"
         />
   </globalBindings>
 

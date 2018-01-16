@@ -14,10 +14,12 @@
  * limitations under the License.
  */
 
- package org.drools.semantics.test;
+ package org.kie.semantics.test;
 
 import java.util.*;
 import org.drools.core.base.DroolsQuery;
+import org.drools.core.beliefsystem.abductive.Abducible;
+
 
 declare Relation
 	subject		    : String		@key
@@ -25,6 +27,7 @@ declare Relation
 end
 
 declare SubConceptOf extends Relation
+@Abducible
 end
 
 
@@ -47,9 +50,12 @@ declare Explore
 end
 
 
-query subConceptOf( SubConceptOf $link, String $sub, String $sup )
-    $link := SubConceptOf( $sub, $sup ; )
+query subConceptOf( String $sub, String $sup )
+@Abductive( target=SubConceptOf.class )
+    Concept( iri == $sub, superConcepts contains $sup )
 end
+
+
 
 
 rule "Init"
@@ -87,7 +93,7 @@ rule "Explore Down"
 when
     $x : Explore( $father, $new ; )
     $s : SubConceptOf( $child := subject != $new, $father := object )
-    subConceptOf( $link, $new, $child ; )
+    $link := subConceptOf( $new, $child ; )
     exists SubConceptOf( $foo, $child ; )
 then
     System.out.println( "DOWN : Binding "+ $new + " to " + $child );
@@ -100,43 +106,12 @@ rule "Explore Up 2"
 when
     Explore( $father, $new ; )
     $x : SubConceptOf( $child := subject != $new, $father := object )
-    not subConceptOf( $link, $child, $new ; )
+    not subConceptOf( $child, $new ; )
     exists SubConceptOf( $foo, $child ; )
 then
     System.out.println( "NOT UP : Binding "+ $child + " to " + $new  );
     insert( new Explore( $child, $new ) );
 end
-
-
-rule "Opportunistic"
-salience 9999
-when
-    $q : DroolsQuery( name == "subConceptOf", $args : elements )
-    Concept( iri == $args[1], superConcepts contains $args[2] )
-then
-    System.out.println( "Query successful !" + $args[1] + " in " + $args[2] );
-    insert( new SubConceptOf( (String) $args[1], (String) $args[2] ) );
-end
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -167,7 +142,14 @@ when
 	$sc : SubConceptOf()
 	$m : Mark( arg == $sc )
 then
-	retract($sc);
-	retract($m);
+	delete($sc);
+	delete($m);
 end
 
+rule "Clean"
+salience -999
+when
+	$e : Explore()
+then
+	delete($e);
+end

@@ -51,12 +51,10 @@
     <dependency>
       <groupId>org.kie</groupId>
       <artifactId>kie-shapes-generator</artifactId>
-      <version>${project.version}</version>
     </dependency>
     <dependency>
       <groupId>org.kie</groupId>
       <artifactId>kie-shapes-utilities</artifactId>
-      <version>${project.version}</version>
     </dependency>
 
     <dependency>
@@ -98,14 +96,27 @@
 
 
 
+
     <dependency>
-      <groupId>junit</groupId>
-      <artifactId>junit</artifactId>
+      <groupId>com.clarkparsia.empire</groupId>
+      <artifactId>jena</artifactId>
       <scope>test</scope>
+      <exclusions>
+        <exclusion>
+          <groupId>xerces</groupId>
+          <artifactId>xercesImpl</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>com.clarkparsia.empire</groupId>
-      <artifactId>core</artifactId>
+      <artifactId>sesame</artifactId>
+      <scope>test</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>javassist</groupId>
+      <artifactId>javassist</artifactId>
       <scope>test</scope>
     </dependency>
 

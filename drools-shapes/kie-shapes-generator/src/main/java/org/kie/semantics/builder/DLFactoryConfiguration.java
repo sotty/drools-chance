@@ -1,7 +1,7 @@
 package org.kie.semantics.builder;
 
-import org.drools.semantics.builder.model.OntoModel;
-import org.drools.semantics.builder.model.inference.ModelInferenceStrategy;
+import org.kie.semantics.builder.model.OntoModel;
+import org.kie.semantics.builder.model.inference.ModelInferenceStrategy;
 import org.semanticweb.owlapi.model.OWLAxiom;
 import org.semanticweb.owlapi.util.InferredAxiomGenerator;
 import org.semanticweb.owlapi.util.InferredClassAssertionAxiomGenerator;

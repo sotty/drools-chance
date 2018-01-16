@@ -6,7 +6,7 @@ import com.sun.tools.xjc.Plugin;
 import com.sun.tools.xjc.model.CPluginCustomization;
 import com.sun.tools.xjc.outline.ClassOutline;
 import com.sun.tools.xjc.outline.Outline;
-import org.drools.semantics.builder.model.compilers.SemanticXSDModelCompilerImpl;
+import org.kie.semantics.builder.model.compilers.SemanticXSDModelCompilerImpl;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;

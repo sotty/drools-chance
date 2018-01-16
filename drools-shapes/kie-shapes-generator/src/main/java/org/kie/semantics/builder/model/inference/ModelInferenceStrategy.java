@@ -17,7 +17,7 @@
 package org.kie.semantics.builder.model.inference;
 
 import org.kie.semantics.builder.DLFactoryConfiguration;
-import org.drools.semantics.builder.model.OntoModel;
+import org.kie.semantics.builder.model.OntoModel;
 import org.kie.api.io.Resource;
 import org.semanticweb.owlapi.model.OWLOntology;
 

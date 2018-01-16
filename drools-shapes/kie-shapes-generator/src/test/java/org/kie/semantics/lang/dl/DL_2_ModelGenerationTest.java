@@ -16,7 +16,7 @@
 
 package org.kie.semantics.lang.dl;
 
-import org.drools.semantics.builder.model.PropertyRelation;
+import org.kie.semantics.builder.model.PropertyRelation;
 import org.junit.Ignore;
 import org.kie.api.io.Resource;
 import org.kie.internal.io.ResourceFactory;
@@ -24,11 +24,11 @@ import org.kie.semantics.builder.DLFactory;
 import org.kie.semantics.builder.DLFactoryBuilder;
 import org.kie.semantics.builder.DLFactoryConfiguration;
 import org.kie.semantics.builder.model.Concept;
-import org.drools.semantics.builder.model.DRLModel;
-import org.drools.semantics.builder.model.ModelFactory;
-import org.drools.semantics.builder.model.OntoModel;
-import org.drools.semantics.builder.model.compilers.ModelCompiler;
-import org.drools.semantics.builder.model.compilers.ModelCompilerFactory;
+import org.kie.semantics.builder.model.DRLModel;
+import org.kie.semantics.builder.model.ModelFactory;
+import org.kie.semantics.builder.model.OntoModel;
+import org.kie.semantics.builder.model.compilers.ModelCompiler;
+import org.kie.semantics.builder.model.compilers.ModelCompilerFactory;
 import org.junit.Test;
 import org.semanticweb.owlapi.model.IRI;
 import org.semanticweb.owlapi.model.OWLOntology;
@@ -95,7 +95,9 @@ public class DL_2_ModelGenerationTest {
 
         OntoModel results;
 
-        results = factory.buildModel( "diamond", res, DLFactoryConfiguration.newConfiguration( OntoModel.Mode.FLAT ) );
+        results = factory.buildModel( "diamond",
+                                      res,
+                                      DLFactoryConfiguration.newConfiguration( OntoModel.Mode.FLAT ) );
 
         checkDiamond( results );
 

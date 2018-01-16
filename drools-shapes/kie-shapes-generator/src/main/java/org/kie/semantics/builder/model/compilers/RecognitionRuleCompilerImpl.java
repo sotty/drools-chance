@@ -19,11 +19,11 @@ package org.kie.semantics.builder.model.compilers;
 import org.drools.compiler.lang.api.PackageDescrBuilder;
 import org.kie.semantics.builder.model.CompiledOntoModel;
 import org.kie.semantics.builder.model.Concept;
-import org.drools.semantics.builder.model.ModelFactory;
-import org.drools.semantics.builder.model.OntoModel;
-import org.drools.semantics.builder.model.RecognitionRuleModel;
-import org.drools.semantics.builder.model.RecognitionRuleModelImpl;
-import org.drools.semantics.builder.reasoner.APIRecognitionRuleBuilder;
+import org.kie.semantics.builder.model.ModelFactory;
+import org.kie.semantics.builder.model.OntoModel;
+import org.kie.semantics.builder.model.RecognitionRuleModel;
+import org.kie.semantics.builder.model.RecognitionRuleModelImpl;
+import org.kie.semantics.builder.reasoner.APIRecognitionRuleBuilder;
 import org.semanticweb.owlapi.apibinding.OWLManager;
 import org.semanticweb.owlapi.io.StreamDocumentSource;
 import org.semanticweb.owlapi.model.IRI;
@@ -85,14 +85,16 @@ public class RecognitionRuleCompilerImpl extends ModelCompilerImpl implements Re
     }
 
     private void processDefinitions( Concept con, OWLClass klass, OWLOntology ontology, PackageDescrBuilder pdBuilder ) {
-        HashMap<String,Object> map = new HashMap<String, Object>();
-	    EntitySearcher.getEquivalentClasses( klass, ontology.importsClosure() ).forEach( (def) -> {
-                map.clear();
-                map.put( "klass", klass );
-                map.put( "defn", def );
-                map.put( "ontology", ontology );
-                compile( con, pdBuilder, map );
-            });
+	    HashMap<String,Object> map = new HashMap<String, Object>();
+	    EntitySearcher.getEquivalentClasses( klass, ontology.importsClosure() )
+	                  .filter( (def) -> ! klass.equals( def ) )
+	                  .forEach( (def) -> {
+		                  map.clear();
+		                  map.put( "klass", klass );
+		                  map.put( "defn", def );
+		                  map.put( "ontology", ontology );
+		                  compile( con, pdBuilder, map );
+	                  });
     }
 
 

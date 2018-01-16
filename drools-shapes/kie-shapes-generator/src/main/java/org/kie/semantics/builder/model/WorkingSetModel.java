@@ -16,7 +16,7 @@
 
 package org.kie.semantics.builder.model;
 
-import org.drools.semantics.util.SemanticWorkingSetConfigData;
+import org.kie.semantics.util.SemanticWorkingSetConfigData;
 
 
 public interface WorkingSetModel extends CompiledOntoModel {

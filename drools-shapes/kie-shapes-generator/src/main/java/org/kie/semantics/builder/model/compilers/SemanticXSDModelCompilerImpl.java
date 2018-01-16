@@ -16,18 +16,18 @@
 
 package org.kie.semantics.builder.model.compilers;
 
+import org.jdom.Namespace;
+import org.kie.internal.io.ResourceFactory;
 import org.kie.semantics.builder.DLTemplateManager;
 import org.kie.semantics.builder.model.CompiledOntoModel;
 import org.kie.semantics.builder.model.Concept;
-import org.drools.semantics.builder.model.ModelFactory;
-import org.drools.semantics.builder.model.OntoModel;
-import org.drools.semantics.builder.model.PropertyRelation;
+import org.kie.semantics.builder.model.ModelFactory;
+import org.kie.semantics.builder.model.OntoModel;
+import org.kie.semantics.builder.model.PropertyRelation;
 import org.kie.semantics.builder.model.SemanticXSDModel;
-import org.drools.semantics.builder.model.XSDModel;
-import org.drools.semantics.utils.NameUtils;
-import org.drools.semantics.utils.NamespaceUtils;
-import org.jdom.Namespace;
-import org.kie.internal.io.ResourceFactory;
+import org.kie.semantics.builder.model.XSDModel;
+import org.kie.semantics.utils.NameUtils;
+import org.kie.semantics.utils.NamespaceUtils;
 import org.mvel2.templates.CompiledTemplate;
 import org.mvel2.templates.TemplateRegistry;
 import org.mvel2.templates.TemplateRuntime;
@@ -457,7 +457,7 @@ public class SemanticXSDModelCompilerImpl extends XSDModelCompilerImpl implement
     public Document getGlobalBindings() {
         InputStream bindingsIS = null;
         try {
-            bindingsIS = ResourceFactory.newClassPathResource("org/drools/semantics/builder/model/compilers/global.xjb").getInputStream();
+            bindingsIS = ResourceFactory.newClassPathResource("org/kie/semantics/builder/model/compilers/global.xjb").getInputStream();
             byte[] data = new byte[ bindingsIS.available() ];
             bindingsIS.read( data );
             DocumentBuilderFactory df = DocumentBuilderFactory.newInstance();

@@ -16,7 +16,7 @@
 
 package org.kie.semantics.builder.model;
 
-import org.drools.semantics.utils.NameUtils;
+import org.kie.semantics.utils.NameUtils;
 import org.kie.api.definition.type.Position;
 
 import java.lang.reflect.Method;

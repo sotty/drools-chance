@@ -16,8 +16,8 @@
 
 package org.kie.semantics.builder.model;
 
-import org.drools.semantics.util.area.AreaNode;
-import org.drools.semantics.util.area.AreaTxnImpl;
+import org.kie.semantics.util.area.AreaNode;
+import org.kie.semantics.util.area.AreaTxnImpl;
 
 import java.util.HashMap;
 import java.util.HashSet;

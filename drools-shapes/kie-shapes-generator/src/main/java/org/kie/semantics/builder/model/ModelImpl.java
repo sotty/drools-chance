@@ -18,7 +18,7 @@ package org.kie.semantics.builder.model;
 
 
 import org.drools.core.util.CodedHierarchy;
-import org.drools.semantics.util.area.AreaTxn;
+import org.kie.semantics.util.area.AreaTxn;
 import org.semanticweb.owlapi.model.OWLOntology;
 
 import java.util.List;

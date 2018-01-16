@@ -20,7 +20,7 @@ import org.kie.semantics.builder.DLFactory;
 import org.kie.semantics.builder.DLFactoryBuilder;
 import org.kie.semantics.builder.DLFactoryConfiguration;
 import org.kie.semantics.builder.model.Concept;
-import org.drools.semantics.builder.model.OntoModel;
+import org.kie.semantics.builder.model.OntoModel;
 import org.junit.Test;
 import org.kie.api.KieServices;
 import org.kie.api.io.Resource;
@@ -216,6 +216,18 @@ public class DL_5_ClassHierarchyTest {
         OntoModel results = factory.buildModel( "diamond", res, DLFactoryConfiguration.newConfiguration( OntoModel.Mode.OPTIMIZED ) );
 
         assertTrue( results.isHierarchyConsistent() );
+
+
+	    Concept left = results.getConcept( "<_Left>" );
+	    assertNotNull( left );
+	    assertEquals( 2, left.getImplementingCon().getChosenProperties().size() );
+	    assertEquals( 4, left.getImplementingCon().getAvailablePropertiesVirtual().size() );
+
+
+	    Concept botm = results.getConcept( "<_Bottom>" );
+	    assertNotNull( botm );
+	    assertEquals( 2, botm.getImplementingCon().getChosenProperties().size() );
+	    assertEquals( 9, botm.getImplementingCon().getAvailablePropertiesVirtual().size() );
 
     }
 

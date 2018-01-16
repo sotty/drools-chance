@@ -18,8 +18,8 @@ package org.kie.semantics.builder.model.hierarchy;
 
 
 import org.kie.semantics.builder.model.Concept;
-import org.drools.semantics.builder.model.OntoModel;
-import org.drools.semantics.builder.model.PropertyRelation;
+import org.kie.semantics.builder.model.OntoModel;
+import org.kie.semantics.builder.model.PropertyRelation;
 import org.w3._2002._07.owl.Thing;
 
 import java.util.ArrayList;

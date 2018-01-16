@@ -1,8 +1,9 @@
 package org.kie.semantics.builder.model.hierarchy;
 
 
-import org.drools.semantics.builder.model.OntoModel;
-import org.drools.semantics.builder.model.hierarchy.opt.OptimalHierarchy;
+import org.kie.semantics.builder.model.OntoModel;
+import org.kie.semantics.builder.model.hierarchy.opt.OptimalHierarchy;
+import org.optaplanner.core.api.score.buildin.hardsoft.HardSoftScore;
 import org.optaplanner.core.api.solver.Solver;
 import org.optaplanner.core.api.solver.SolverFactory;
 import org.optaplanner.core.impl.solver.XStreamXmlSolverFactory;
@@ -12,7 +13,7 @@ public class OptimizedModelProcessor implements ModelHierarchyProcessor {
     public void process( OntoModel model ) {
 
         SolverFactory<OptimalHierarchy> solverFactory = new XStreamXmlSolverFactory<>();
-        ((XStreamXmlSolverFactory) solverFactory).configure( "org/drools/semantics/builder/model/hierarchy/hier_joined_config.xml" );
+        ((XStreamXmlSolverFactory) solverFactory).configure( "org/kie/semantics/builder/model/hierarchy/hier_joined_config.xml" );
 
         Solver<OptimalHierarchy> solver = solverFactory.buildSolver();
 

@@ -3,8 +3,8 @@ package org.kie.semantics.builder.model.hierarchy.opt;
 
 import org.kie.semantics.builder.model.Concept;
 import org.kie.semantics.builder.model.ConceptImplProxy;
-import org.drools.semantics.builder.model.OntoModel;
-import org.drools.semantics.builder.model.PropertyRelation;
+import org.kie.semantics.builder.model.OntoModel;
+import org.kie.semantics.builder.model.PropertyRelation;
 import org.optaplanner.core.api.domain.solution.PlanningEntityCollectionProperty;
 import org.optaplanner.core.api.domain.solution.PlanningScore;
 import org.optaplanner.core.api.domain.solution.PlanningSolution;
@@ -49,7 +49,7 @@ public class OptimalHierarchy  {
 
         for ( Concept c  : availableConcepts ) {
             ConceptImplProxy x = new ConceptImplProxy( c );
-            inheritances.put(x.getIri(), x);
+            inheritances.put( x.getIri(), x );
         }
     }
 

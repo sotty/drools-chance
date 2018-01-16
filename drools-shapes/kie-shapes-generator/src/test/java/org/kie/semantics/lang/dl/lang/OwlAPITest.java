@@ -16,6 +16,7 @@
 
 package org.kie.semantics.lang.dl.lang;
 
+import org.drools.core.factmodel.traits.Entity;
 import org.drools.core.io.impl.ClassPathResource;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -33,6 +34,7 @@ import org.semanticweb.owlapi.model.OWLOntologyManager;
 import org.semanticweb.owlapi.model.parameters.Imports;
 import org.semanticweb.owlapi.search.EntitySearcher;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -121,5 +123,40 @@ public class OwlAPITest {
         }
 
     }
+
+    
+    private String test = "" +
+		    "Prefix(owl:=<http://www.w3.org/2002/07/owl#>) " +
+		    "Prefix(rdf:=<http://www.w3.org/1999/02/22-rdf-syntax-ns#>) " +
+		    "Prefix(xml:=<http://www.w3.org/XML/1998/namespace>) " +
+		    "Prefix(xsd:=<http://www.w3.org/2001/XMLSchema#>) " +
+		    "Prefix(rdfs:=<http://www.w3.org/2000/01/rdf-schema#>) " +
+		    " " +
+		    " " +
+		    "Ontology(<http://www.test.org> " +
+		    " " +
+		    "Declaration(Class(<http://www.foo.com#SubKlass>)) " +
+		    "Declaration(Class(<http://www.test.org#Klass>)) " +
+		    "EquivalentClasses(<http://www.foo.com#SubKlass> <http://www.test.org#Klass>) " +
+		    ")";
+
+    @Test
+	public void testEquivalence() {
+	    OWLOntologyManager manager = OWLManager.createOWLOntologyManager();
+
+	    try {
+		    final OWLOntology onto = manager.loadOntologyFromOntologyDocument( new ByteArrayInputStream( test.getBytes() ) );
+		    onto.classesInSignature().forEach( (k) -> {
+		    	System.out.println( k );
+				EntitySearcher.getEquivalentClasses( k, onto.importsClosure() ).forEach( (e) -> System.out.println( "\t" + e ) );
+		    } );
+
+	    } catch ( OWLOntologyCreationException e ) {
+		    e.printStackTrace();
+		    fail( e.getMessage() );
+	    }
+
+    }
+
 
 }

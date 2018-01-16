@@ -52,7 +52,7 @@
         <inheritance:implements>org.jvnet.jaxb2_commons.lang.Equals</inheritance:implements>
         <inheritance:implements>org.jvnet.jaxb2_commons.lang.HashCode</inheritance:implements>
         @if{ concept.fullyQualifiedName == "org.w3._2002._07.owl.Thing" }
-            <inheritance:extends>org.drools.semantics.UIdAble</inheritance:extends>
+            <inheritance:extends>org.kie.semantics.UIdAble</inheritance:extends>
         @else{}
             <inheritance:extends>@{concept.chosenSuperConcept.fullyQualifiedName + "Impl"}</inheritance:extends>
         @end{}
@@ -159,7 +159,7 @@
                     <annox:annotate target="field">
                             <annox:annotate target="field"
                                         annox:class="javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter"
-                                        value="org.drools.semantics.XMLSerializationHelper" />
+                                        value="org.kie.semantics.XMLSerializationHelper" />
                             <!-- annox:annotate target="field" annox:class="javax.xml.bind.annotation.XmlIDREF" /-->
                     </annox:annotate>
                 @end{}

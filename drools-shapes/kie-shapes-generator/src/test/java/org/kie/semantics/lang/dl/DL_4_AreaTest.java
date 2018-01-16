@@ -22,10 +22,10 @@ import org.kie.internal.io.ResourceFactory;
 import org.kie.semantics.builder.DLFactoryConfiguration;
 import org.kie.semantics.builder.DLFactoryImpl;
 import org.kie.semantics.builder.model.Concept;
-import org.drools.semantics.builder.model.OntoModel;
-import org.drools.semantics.builder.model.PropertyRelation;
-import org.drools.semantics.util.area.Area;
-import org.drools.semantics.util.area.AreaTxn;
+import org.kie.semantics.builder.model.OntoModel;
+import org.kie.semantics.builder.model.PropertyRelation;
+import org.kie.semantics.util.area.Area;
+import org.kie.semantics.util.area.AreaTxn;
 import org.junit.Test;
 
 import java.util.Arrays;

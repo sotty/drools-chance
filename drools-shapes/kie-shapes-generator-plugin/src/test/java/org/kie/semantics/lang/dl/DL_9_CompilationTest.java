@@ -20,15 +20,12 @@ import com.clarkparsia.empire.Empire;
 import com.clarkparsia.empire.EmpireOptions;
 import com.clarkparsia.empire.config.ConfigKeys;
 import com.clarkparsia.empire.config.EmpireConfiguration;
+import com.clarkparsia.empire.jena.JenaEmpireModule;
+import com.clarkparsia.empire.sesame.OpenRdfEmpireModule;
 import com.clarkparsia.empire.util.DefaultEmpireModule;
 import com.hp.hpl.jena.ontology.OntModel;
 import com.hp.hpl.jena.rdf.model.ModelFactory;
 import org.apache.commons.lang3.StringUtils;
-import org.drools.semantics.UIdAble;
-import org.kie.semantics.builder.DLFactory;
-import org.kie.semantics.builder.DLFactoryBuilder;
-import org.kie.semantics.builder.DLFactoryConfiguration;
-import org.drools.semantics.builder.model.OntoModel;
 import org.drools.shapes.OntoModelCompiler;
 import org.junit.Rule;
 import org.junit.Test;
@@ -38,6 +35,11 @@ import org.kie.api.builder.Results;
 import org.kie.api.definition.KiePackage;
 import org.kie.internal.io.ResourceFactory;
 import org.kie.internal.utils.KieHelper;
+import org.kie.semantics.UIdAble;
+import org.kie.semantics.builder.DLFactory;
+import org.kie.semantics.builder.DLFactoryBuilder;
+import org.kie.semantics.builder.DLFactoryConfiguration;
+import org.kie.semantics.builder.model.OntoModel;
 import org.mvel2.MVEL;
 import org.w3c.dom.Document;
 import org.w3c.dom.NodeList;
@@ -69,7 +71,9 @@ import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpression;
 import javax.xml.xpath.XPathFactory;
 import java.io.File;
+import java.io.FileFilter;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.io.StringReader;
@@ -130,7 +134,7 @@ public class DL_9_CompilationTest {
         boolean xsdOut = compiler.streamXSDsWithBindings();
 
         assertTrue( xsdOut );
-        File f = new File( compiler.tryGetMetaInfDir() + File.separator + results.getDefaultPackage() + ".xsd" );
+        File f = new File( compiler.getMetaInfDir().getPath() + File.separator + results.getDefaultPackage() + ".xsd" );
         try {
             Document dox = parseXML( f, true );
 
@@ -145,7 +149,7 @@ public class DL_9_CompilationTest {
 
         showDirContent( folder );
 
-        File b = new File( compiler.tryGetMetaInfDir() + File.separator + results.getDefaultPackage() + ".xjb" );
+        File b = new File( compiler.getMetaInfDir().getPath()+ File.separator + results.getDefaultPackage() + ".xjb" );
         try {
             Document dox = parseXML( b, false );
 
@@ -185,6 +189,13 @@ public class DL_9_CompilationTest {
                 + "BottomImpl.java" );
         printSourceFile( klass, System.out );
 
+        File intfx = new File( compiler.getJavaDir().getPath()
+                + File.separator
+                + results.getDefaultPackage().replace(".", File.separator)
+                + File.separator
+                + "C0.java" );
+        printSourceFile( intfx, System.out );
+
         showDirContent( folder );
 
         // ****** Do compile sources
@@ -205,7 +216,7 @@ public class DL_9_CompilationTest {
 
 
         try {
-            parseXML( new File( compiler.tryGetBinDir() + "/META-INF/" + "persistence.xml" ), true );
+            parseXML( new File( compiler.getBinDir().getPath() + "/META-INF/" + "persistence.xml" ), true );
         } catch ( Exception e ) {
             e.printStackTrace();
         }
@@ -277,13 +288,26 @@ public class DL_9_CompilationTest {
                 + "KlassImpl.java" );
         printSourceFile( klass, System.out );
 
-        showDirContent( folder );
+        System.out.println( "-----------------------------" );
+        System.out.println( "-----------------------------" );
+
+        File klass2 = new File( compiler.getJavaDir().getPath()
+                + File.separator
+                + results.getDefaultPackage().replace(".", File.separator)
+                + File.separator
+                + "package-info.java" );
+        printSourceFile( klass2, System.out );
+
+	    System.out.println( "-----------------------------" );
+	    System.out.println( "-----------------------------" );
+
+	    showDirContent( folder );
 
         List<Diagnostic<? extends JavaFileObject>> diagnostics = compiler.doCompile();
 
         boolean success = true;
         for ( Diagnostic diag : diagnostics ) {
-            System.out.println( "ERROR : " + diag );
+            System.out.println( diag.getKind() + " : " + diag );
             if ( diag.getKind() == Diagnostic.Kind.ERROR ) {
                 success = false;
             }
@@ -448,7 +472,17 @@ public class DL_9_CompilationTest {
 
         showDirContent( folder );
 
-        List<Diagnostic<? extends JavaFileObject>> diagnostics = compiler.doCompile();
+		System.out.println( "-----------------------------" );
+
+		File schema = new File( compiler.getMetaInfDir().getPath()
+				                        + File.separator
+				                        + "com.foo.xsd" );
+		printSourceFile( schema, System.out );
+
+		System.out.println( "-----------------------------" );
+
+
+		List<Diagnostic<? extends JavaFileObject>> diagnostics = compiler.doCompile();
 
         boolean success = true;
         for ( Diagnostic diag : diagnostics ) {
@@ -669,24 +703,26 @@ public class DL_9_CompilationTest {
             compiler2.streamJavaInterfaces( false );
             compiler2.streamXSDsWithBindings();
 
-            compiler2.mojo( OntoModelCompiler.defaultOptions, OntoModelCompiler.MOJO_VARIANTS.JPA2 );
+            compiler2.mojo( OntoModelCompiler.defaultOptions, OntoModelCompiler.MOJO_VARIANTS.JPA2, urlKL );
 
-            showDirContent( folder );
+	        showDirContent( folder );
 
-            File unImplBoundLeft = new File( compiler2.tryGetXjcDir() + File.separator +
-                                        "org.jboss.drools.semantics.diamond".replace( ".", File.separator ) +
-                                        File.separator + "Left.java" );
-            assertFalse( unImplBoundLeft.exists() );
-            File implBoundLeft = new File( compiler2.tryGetXjcDir() + File.separator +
-                                        "org.jboss.drools.semantics.diamond".replace( ".", File.separator ) +
-                                        File.separator + "LeftImpl.java" );
-            assertTrue( implBoundLeft.exists() );
+			//printMetaFiles( compiler2.getMetaInfDir() );
 
-            File leftInterface = new File( compiler2.tryGetJavaDir() + File.separator +
-                    "org.jboss.drools.semantics.diamond".replace( ".", File.separator ) +
-                    File.separator + "Left.java" );
+	        File unImplBoundLeft = new File( compiler2.getXjcDir().getPath() + File.separator +
+			                                         "org.jboss.drools.semantics.diamond".replace( ".", File.separator ) +
+			                                         File.separator + "Left.java" );
+	        assertFalse( unImplBoundLeft.exists() );
+	        File implBoundLeft = new File( compiler2.getXjcDir().getPath() + File.separator +
+			                                       "org.jboss.drools.semantics.diamond".replace( ".", File.separator ) +
+			                                       File.separator + "LeftImpl.java" );
+	        assertTrue( implBoundLeft.exists() );
 
-            assertTrue( leftInterface.exists() );
+	        File leftInterface = new File( compiler2.getJavaDir().getPath() + File.separator +
+			                                       "org.jboss.drools.semantics.diamond".replace( ".", File.separator ) +
+			                                       File.separator + "Left.java" );
+
+	        assertTrue( leftInterface.exists() );
 
             List<Diagnostic<? extends JavaFileObject>> diagnostics = compiler2.doCompile();
 
@@ -704,7 +740,7 @@ public class DL_9_CompilationTest {
             assertEquals( "diamondX", expr.evaluate( dox, XPathConstants.STRING ) );
 
 
-            File YInterface = new File( compiler2.tryGetJavaDir() + File.separator +
+            File YInterface = new File( compiler2.getJavaDir().getPath() + File.separator +
                     "org.jboss.drools.semantics.diamond".replace( ".", File.separator ) +
                     File.separator + "X.java" );
             assertTrue( YInterface.exists() );
@@ -756,7 +792,7 @@ public class DL_9_CompilationTest {
 
 
 
-            File off = new File( compiler2.tryGetXjcDir() + File.separator +
+            File off = new File( compiler2.getXjcDir().getPath() + File.separator +
                     "org.jboss.drools.semantics.diamond".replace( ".", File.separator ) +
                     File.separator + "Left_Off.java" );
             assertFalse( off.exists() );
@@ -772,7 +808,21 @@ public class DL_9_CompilationTest {
 
     }
 
-    private Set<String> getIFHierarchy( Class<?> x ) {
+	private void printMetaFiles( File META ) throws IOException {
+		for ( File binder : META.listFiles( pathname -> (pathname.getName().endsWith( "xjb" ) || pathname.getName().endsWith( "xsd" ))
+				&& (! pathname.getName().contains( "global" ) ) && (! pathname.getName().contains( "owlThing" )) )) {
+			System.out.println( "Printing" + binder );
+			FileInputStream fis = new FileInputStream(binder);
+			byte[] data = new byte[(int) binder.length()];
+			fis.read(data);
+			fis.close();
+			System.out.println( new String(data) );
+			System.out.println(  );
+			System.out.println(  );
+		}
+	}
+
+	private Set<String> getIFHierarchy( Class<?> x ) {
         Set<String> l = new HashSet<>();
         extractInterfaces( x, l );
         return l;
@@ -878,8 +928,8 @@ public class DL_9_CompilationTest {
 
 
     private void checkEmpireRefresh( Object obj, ClassLoader urlk ) {
-        File config = new File( compiler.tryGetBinDir() + File.separator + OntoModelCompiler.METAINF + File.separator + "empire.configuration.file" );
-        File annox = new File( compiler.tryGetBinDir() + File.separator + OntoModelCompiler.METAINF + File.separator + "empire.annotation.index" );
+        File config = new File( compiler.getBinDir().getPath() + File.separator + OntoModelCompiler.METAINF + File.separator + "empire.configuration.file" );
+        File annox = new File( compiler.getBinDir().getPath() + File.separator + OntoModelCompiler.METAINF + File.separator + "empire.annotation.index" );
 
         ClassLoader oldKL = Thread.currentThread().getContextClassLoader();
         try {
@@ -916,8 +966,9 @@ public class DL_9_CompilationTest {
     private void checkEquality(Object obj, Object obj2) throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
         Object a0 = obj.getClass().getMethod( "getC0Prop" ).invoke( obj );
         Object c0 = obj2.getClass().getMethod( "getC0Prop" ).invoke( obj2 );
-        assertTrue( c0 instanceof List && ((List) c0).size() == 2 );
-		assertEquals( a0, c0 );
+        assertTrue( c0 instanceof List && ((List) c0).size() == 4 );
+        // graph (de)serialization cannot guarantee list order as of Empire 1.0
+		assertTrue( ((List<?>) c0).containsAll( (List<?>) a0 ) );
 
         Object aX = obj.getClass().getMethod( "getObjPropX" ).invoke( obj );
         Object cX = obj2.getClass().getMethod( "getObjPropX" ).invoke( obj2 );
@@ -937,9 +988,10 @@ public class DL_9_CompilationTest {
 
     private EntityManager initEmpireEM( File config, File annox, String pack ) {
         System.setProperty( "empire.configuration.file", config.getPath() );
-        EmpireConfiguration ecfg = new EmpireConfiguration();
+
+	    EmpireConfiguration ecfg = DefaultEmpireModule.readConfiguration();
         ecfg.getGlobalConfig().put( ConfigKeys.ANNOTATION_INDEX, annox.getPath() );
-        Empire.init( ecfg, new DefaultEmpireModule() );
+        Empire.init( ecfg, new JenaEmpireModule( ) );
         EmpireOptions.STRICT_MODE = false;
 
         PersistenceProvider aProvider = Empire.get().persistenceProvider();
@@ -950,14 +1002,7 @@ public class DL_9_CompilationTest {
 
     private static Map<String, String> getMockEMConfigMap() {
         Map<String, String> map = new HashMap<>();
-
-//	    map.put( RepositoryDataSourceFactory.REPO, "test-repo");
-//	    map.put( RepositoryDataSourceFactory.FILES, "");
-//	    map.put( RepositoryDataSourceFactory.QUERY_LANG, RepositoryDataSourceFactory.LANG_SERQL );
-//	    map.put( ConfigKeys.FACTORY, RepositoryDataSourceFactory.class.getName() );
-
-	    map.put( ConfigKeys.FACTORY, "sesame");
-
+	    map.put( ConfigKeys.FACTORY, "jena-test");
         return map;
     }
 
@@ -998,6 +1043,8 @@ public class DL_9_CompilationTest {
         bottom.getMethod( "addC2Prop", String.class ).invoke( bot, "helloc2" );
         bottom.getMethod( "addC0Prop", String.class ).invoke( bot, "helloc0" );
         bottom.getMethod( "addC0Prop", String.class ).invoke( bot, "helloc0_2" );
+        bottom.getMethod( "addC0Prop", String.class ).invoke( bot, "helloc0_3" );
+        bottom.getMethod( "addC0Prop", String.class ).invoke( bot, "helloc0_4" );
 
         return bot;
     }

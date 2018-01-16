@@ -19,7 +19,7 @@ package org.kie.semantics.builder.model;
 import org.drools.compiler.lang.api.PackageDescrBuilder;
 import org.drools.compiler.lang.api.impl.PackageDescrBuilderImpl;
 import org.drools.compiler.lang.descr.RuleDescr;
-import org.drools.semantics.builder.reasoner.APIRecognitionRuleBuilder;
+import org.kie.semantics.builder.reasoner.APIRecognitionRuleBuilder;
 
 import java.io.IOException;
 import java.io.OutputStream;

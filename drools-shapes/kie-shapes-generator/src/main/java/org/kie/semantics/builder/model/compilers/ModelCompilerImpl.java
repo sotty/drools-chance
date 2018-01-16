@@ -18,8 +18,8 @@ package org.kie.semantics.builder.model.compilers;
 
  import org.kie.semantics.builder.model.CompiledOntoModel;
  import org.kie.semantics.builder.model.Concept;
- import org.drools.semantics.builder.model.OntoModel;
- import org.drools.semantics.utils.NameUtils;
+ import org.kie.semantics.builder.model.OntoModel;
+ import org.kie.semantics.utils.NameUtils;
 
  import java.util.HashMap;
  import java.util.HashSet;

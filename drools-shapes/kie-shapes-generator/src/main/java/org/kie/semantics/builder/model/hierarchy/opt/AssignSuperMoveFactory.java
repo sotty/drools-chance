@@ -56,6 +56,7 @@ public class AssignSuperMoveFactory implements MoveListFactory<OptimalHierarchy>
 
         private ConceptImplProxy con;
         private ConceptImplProxy next;
+		private ConceptImplProxy curr;
 
         private boolean verbose = false;
 
@@ -70,6 +71,7 @@ public class AssignSuperMoveFactory implements MoveListFactory<OptimalHierarchy>
         public AssignDomainMove( ConceptImplProxy con, ConceptImplProxy next ) {
             this.con = con;
             this.next = next;
+            this.curr = con.getChosenSuper();
         }
 
         public boolean isMoveDoable( ScoreDirector scoreDirector ) {
@@ -78,9 +80,9 @@ public class AssignSuperMoveFactory implements MoveListFactory<OptimalHierarchy>
             return con.getChosenSuper() == null || ( ! next.getIri().equals( con.getChosenSuper().getIri() ) );
         }
 
-        public Move createUndoMove( ScoreDirector scoreDirector ) {
-            OptimalHierarchy hier = (OptimalHierarchy) scoreDirector.getWorkingSolution();
-            return new AssignDomainMove( con, hier.getCon( con.getChosenSuper().getIri() ) );
+        public Move<OptimalHierarchy> createUndoMove( ScoreDirector scoreDirector ) {
+            AssignDomainMove undo = new AssignDomainMove( con, curr );
+            return undo;
         }
 
         public Move<OptimalHierarchy> doMove( ScoreDirector scoreDirector ) {
@@ -120,7 +122,8 @@ public class AssignSuperMoveFactory implements MoveListFactory<OptimalHierarchy>
 
             scoreDirector.afterVariableChanged( con, "chosenSuper" );
             scoreDirector.triggerVariableListeners();
-	        return this;
+
+	        return createUndoMove( scoreDirector );
         }
 
         @Override

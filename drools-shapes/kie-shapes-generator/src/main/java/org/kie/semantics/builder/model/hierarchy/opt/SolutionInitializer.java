@@ -3,7 +3,7 @@ package org.kie.semantics.builder.model.hierarchy.opt;
 
 import org.kie.semantics.builder.model.Concept;
 import org.kie.semantics.builder.model.ConceptImplProxy;
-import org.drools.semantics.builder.model.PropertyRelation;
+import org.kie.semantics.builder.model.PropertyRelation;
 import org.optaplanner.core.impl.phase.custom.CustomPhaseCommand;
 import org.optaplanner.core.impl.score.director.ScoreDirector;
 
@@ -11,7 +11,8 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 
 public class SolutionInitializer implements CustomPhaseCommand {
-    public void changeWorkingSolution( ScoreDirector scoreDirector ) {
+
+	public void changeWorkingSolution( ScoreDirector scoreDirector ) {
 
         OptimalHierarchy hier = (OptimalHierarchy) scoreDirector.getWorkingSolution();
 
@@ -68,7 +69,9 @@ public class SolutionInitializer implements CustomPhaseCommand {
                 scoreDirector.afterVariableChanged( con, "chosenSuper" );
 
             } else {
+	            scoreDirector.beforeVariableChanged( con, "chosenSuper" );
                 con.setChosenSuper( con );
+	            scoreDirector.afterVariableChanged( con, "chosenSuper" );
             }
 
             scoreDirector.triggerVariableListeners();

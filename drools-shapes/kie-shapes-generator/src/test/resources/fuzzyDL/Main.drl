@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
- package org.drools.semantics.lang.dl
+ package org.kie.semantics.lang.dl
 
-import org.drools.semantics.lang.dl.Mock;
-import org.drools.semantics.lang.dl.RecognitionGoal;
+import org.kie.semantics.lang.dl.Mock;
+import org.kie.semantics.lang.dl.RecognitionGoal;
 
 
  

@@ -21,7 +21,7 @@ import org.apache.maven.plugin.MojoExecutionException;
 import org.kie.semantics.builder.DLFactory;
 import org.kie.semantics.builder.DLFactoryBuilder;
 import org.kie.semantics.builder.DLFactoryConfiguration;
-import org.drools.semantics.builder.model.OntoModel;
+import org.kie.semantics.builder.model.OntoModel;
 import org.kie.api.io.Resource;
 import org.kie.internal.io.ResourceFactory;
 import org.w3._2002._07.owl.Thing;

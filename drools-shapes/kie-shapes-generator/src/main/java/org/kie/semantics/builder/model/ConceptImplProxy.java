@@ -1,7 +1,7 @@
 package org.kie.semantics.builder.model;
 
 
-import org.drools.semantics.builder.model.hierarchy.opt.ConceptStrengthEvaluator;
+import org.kie.semantics.builder.model.hierarchy.opt.ConceptStrengthEvaluator;
 import org.optaplanner.core.api.domain.entity.PlanningEntity;
 import org.optaplanner.core.api.domain.solution.cloner.DeepPlanningClone;
 import org.optaplanner.core.api.domain.variable.PlanningVariable;

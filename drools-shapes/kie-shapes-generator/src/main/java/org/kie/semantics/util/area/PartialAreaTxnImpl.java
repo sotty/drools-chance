@@ -2,7 +2,7 @@ package org.kie.semantics.util.area;
 
 import org.drools.core.util.HierarchyEncoder;
 import org.kie.semantics.builder.model.Concept;
-import org.drools.semantics.builder.model.PropertyRelation;
+import org.kie.semantics.builder.model.PropertyRelation;
 
 import java.util.Collection;
 

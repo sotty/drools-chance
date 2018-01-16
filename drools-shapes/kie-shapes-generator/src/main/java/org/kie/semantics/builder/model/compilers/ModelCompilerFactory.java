@@ -16,7 +16,7 @@
 
 package org.kie.semantics.builder.model.compilers;
 
-import org.drools.semantics.builder.model.ModelFactory;
+import org.kie.semantics.builder.model.ModelFactory;
 
 public class ModelCompilerFactory {
 

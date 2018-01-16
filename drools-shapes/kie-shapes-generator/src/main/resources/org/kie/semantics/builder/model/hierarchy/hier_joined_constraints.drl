@@ -1,8 +1,8 @@
-package org.drools.semantics.builder.model.hierarchy.opt;
+package org.kie.semantics.builder.model.hierarchy.opt;
 
 
-import org.drools.semantics.builder.model.*;
-import org.drools.semantics.builder.model.hierarchy.opt.*;
+import org.kie.semantics.builder.model.*;
+import org.kie.semantics.builder.model.hierarchy.opt.*;
 import org.optaplanner.core.api.score.buildin.hardsoft.*;
 
 global HardSoftScoreHolder scoreHolder;
@@ -55,7 +55,7 @@ then
 end
 
 
-//
+
 rule "Inherit"
 salience 5
 when
@@ -142,7 +142,7 @@ rule "Too much"
 salience -1
 when
     $i : Has( $con, $pro ; )
-    not Needs( $con, $prop ; )
+    not Needs( $con, $pro ; )
 then
     scoreHolder.addSoftConstraintMatch(kcontext, -1);
 end
@@ -160,85 +160,4 @@ end
 // ############################################################################
 // Debug Log
 // ############################################################################
-
-
-/*
-rule "Log 1"
-salience -11
-when
-    $h : Has()
-then
-    System.out.println( "HAS " + $h );
-end
-*/
-
-/*
-rule "Log 001"
-salience -10
-when
-    $h : ConceptImplProxy( $iri : iri )
-then
-    System.out.println( "ConProxy is in " + $h );
-end
-
-
-rule "Log 0"
-salience -12
-when
-    $h : ChildOf()
-then
-    System.out.println( "CHILDOF " + $h );
-end
-
-rule "Log2"
-salience -13
-when
-    $h : Needs()
-then
-    System.out.println( "NEEDS " + $h );
-end
-
-rule "Log3"
-salience -14
-when
-    $h : Inherits()
-then
-    System.out.println( "INHERITS " + $h );
-end
-*/
-
-//rule "Log4"
-//when
-//    $h : IntConstraintOccurrence()
-//then
-//    System.out.println( "@@@@@@@@@@@ " + $h );
-//end
-
-
-//rule "Log56"
-//salience -20000
-//when
-//    exists Object()
-//then
-//    System.out.println( "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@\n\n" );
-//end
-//rule "Log57"
-//salience 20000
-//when
-//    exists Object()
-//then
-//    System.out.println( "\n\n******************************************************************" );
-//end
-
-
-//rule "Logx"
-//when
-//    $h : Object()
-//then
-//    System.out.println( $h );
-//end
-
-
-
-
 

@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:tns="http://jboss.org/drools/semantics/Diamond"
+            xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:owl="http://www.w3.org/2002/07/owl"
+            xmlns:ns5="http://jboss.org/drools/semantics/coal" elementFormDefault="qualified"
+            targetNamespace="http://jboss.org/drools/semantics/Diamond">
+  <xsd:import namespace="http://jboss.org/drools/semantics/coal" schemaLocation="org.jboss.drools.semantics.coal.xsd"/>
+  <xsd:import namespace="http://www.w3.org/2002/07/owl" schemaLocation="owlThing.xsd"/>
+  <xsd:element name="C2" type="tns:C2"/>
+  <xsd:complexType name="C2">
+    <xsd:complexContent>
+      <xsd:extension base="owl:Thing">
+        <xsd:sequence>
+          <xsd:element name="c2Prop" type="xsd:string" minOccurs="0" maxOccurs="unbounded"/>
+        </xsd:sequence>
+      </xsd:extension>
+    </xsd:complexContent>
+  </xsd:complexType>
+  <xsd:element name="C3" type="tns:C3"/>
+  <xsd:complexType name="C3">
+    <xsd:complexContent>
+      <xsd:extension base="owl:Thing">
+        <xsd:sequence>
+          <xsd:element name="c3Prop" type="xsd:string" minOccurs="0" maxOccurs="unbounded"/>
+        </xsd:sequence>
+      </xsd:extension>
+    </xsd:complexContent>
+  </xsd:complexType>
+  <xsd:element name="C1" type="tns:C1"/>
+  <xsd:complexType name="C1">
+    <xsd:complexContent>
+      <xsd:extension base="owl:Thing">
+        <xsd:sequence>
+          <xsd:element name="c1Prop" type="xsd:string" minOccurs="0" maxOccurs="unbounded"/>
+        </xsd:sequence>
+      </xsd:extension>
+    </xsd:complexContent>
+  </xsd:complexType>
+  <xsd:element name="Top" type="tns:Top"/>
+  <xsd:complexType name="Top">
+    <xsd:complexContent>
+      <xsd:extension base="owl:Thing">
+        <xsd:sequence/>
+      </xsd:extension>
+    </xsd:complexContent>
+  </xsd:complexType>
+  <xsd:element name="C0" type="tns:C0"/>
+  <xsd:complexType name="C0">
+    <xsd:complexContent>
+      <xsd:extension base="tns:Top">
+        <xsd:sequence>
+          <xsd:element name="topProp" type="xsd:string" minOccurs="0" maxOccurs="unbounded"/>
+          <xsd:element name="c0Prop" type="xsd:string" minOccurs="0" maxOccurs="unbounded"/>
+          <xsd:element name="objProp" type="tns:X" minOccurs="0" maxOccurs="unbounded"/>
+        </xsd:sequence>
+      </xsd:extension>
+    </xsd:complexContent>
+  </xsd:complexType>
+  <xsd:element name="Right" type="tns:Right"/>
+  <xsd:complexType name="Right">
+    <xsd:complexContent>
+      <xsd:extension base="tns:C0">
+        <xsd:sequence>
+          <xsd:element name="c2Prop" type="xsd:string" minOccurs="0" maxOccurs="unbounded"/>
+          <xsd:element name="rightProp" type="xsd:string" minOccurs="0" maxOccurs="unbounded"/>
+        </xsd:sequence>
+      </xsd:extension>
+    </xsd:complexContent>
+  </xsd:complexType>
+  <xsd:element name="Left" type="tns:Left"/>
+  <xsd:complexType name="Left">
+    <xsd:complexContent>
+      <xsd:extension base="tns:C0">
+        <xsd:sequence>
+          <xsd:element name="c1Prop" type="xsd:string" minOccurs="0" maxOccurs="unbounded"/>
+          <xsd:element name="leftProp" type="xsd:string" minOccurs="0" maxOccurs="unbounded"/>
+        </xsd:sequence>
+      </xsd:extension>
+    </xsd:complexContent>
+  </xsd:complexType>
+  <xsd:element name="Low" type="tns:Low"/>
+  <xsd:complexType name="Low">
+    <xsd:complexContent>
+      <xsd:extension base="tns:Left">
+        <xsd:sequence>
+          <xsd:element name="c2Prop" type="xsd:string" minOccurs="0" maxOccurs="unbounded"/>
+          <xsd:element name="rightProp" type="xsd:string" minOccurs="0" maxOccurs="unbounded"/>
+          <xsd:element name="foreignProp" type="ns5:Y" minOccurs="0" maxOccurs="unbounded"/>
+          <xsd:element name="lowProp" type="xsd:string" minOccurs="0" maxOccurs="unbounded"/>
+        </xsd:sequence>
+      </xsd:extension>
+    </xsd:complexContent>
+  </xsd:complexType>
+  <xsd:element name="Bottom" type="tns:Bottom"/>
+  <xsd:complexType name="Bottom">
+    <xsd:complexContent>
+      <xsd:extension base="tns:Low">
+        <xsd:sequence>
+          <xsd:element name="c3Prop" type="xsd:string" minOccurs="0" maxOccurs="unbounded"/>
+          <xsd:element name="bottomProp" type="xsd:string" minOccurs="0" maxOccurs="unbounded"/>
+        </xsd:sequence>
+      </xsd:extension>
+    </xsd:complexContent>
+  </xsd:complexType>
+  <xsd:element name="X" type="tns:X"/>
+  <xsd:complexType name="X">
+    <xsd:complexContent>
+      <xsd:extension base="owl:Thing">
+        <xsd:sequence/>
+      </xsd:extension>
+    </xsd:complexContent>
+  </xsd:complexType>
+</xsd:schema>

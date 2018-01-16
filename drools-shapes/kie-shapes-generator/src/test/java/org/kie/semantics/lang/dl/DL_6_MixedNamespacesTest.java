@@ -21,11 +21,11 @@ import org.kie.internal.io.ResourceFactory;
 import org.kie.semantics.builder.DLFactory;
 import org.kie.semantics.builder.DLFactoryBuilder;
 import org.kie.semantics.builder.DLFactoryConfiguration;
-import org.drools.semantics.builder.model.ModelFactory;
-import org.drools.semantics.builder.model.OntoModel;
+import org.kie.semantics.builder.model.ModelFactory;
+import org.kie.semantics.builder.model.OntoModel;
 import org.kie.semantics.builder.model.SemanticXSDModel;
-import org.drools.semantics.builder.model.compilers.ModelCompiler;
-import org.drools.semantics.builder.model.compilers.ModelCompilerFactory;
+import org.kie.semantics.builder.model.compilers.ModelCompiler;
+import org.kie.semantics.builder.model.compilers.ModelCompilerFactory;
 import org.junit.Test;
 
 import static junit.framework.Assert.assertEquals;

@@ -86,7 +86,7 @@ public class @{ typeName }_ extends @if{ "Thing".equals( supertypeName ) } org.d
 
         @Override
         protected void cachePropertyNames() {
-            propertyNames = org.drools.core.util.ClassUtils.getSettableProperties( @{ package }.@{ typeName }.class );
+            propertyNames = org.drools.core.util.ClassUtils.getAccessibleProperties( @{ package }.@{ typeName }.class );
         }
 
         @Override

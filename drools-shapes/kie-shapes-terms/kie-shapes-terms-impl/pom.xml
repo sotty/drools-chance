@@ -42,10 +42,10 @@
       <groupId>com.clarkparsia.empire</groupId>
       <artifactId>core</artifactId>
       <exclusions>
-        <exclusion>
+        <!--exclusion>
           <groupId>org.openrdf.sesame</groupId>
           <artifactId>sesame-rio</artifactId>
-        </exclusion>
+        </exclusion-->
       </exclusions>
     </dependency>
 

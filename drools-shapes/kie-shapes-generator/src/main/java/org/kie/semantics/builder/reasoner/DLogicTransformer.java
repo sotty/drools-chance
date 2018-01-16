@@ -37,7 +37,8 @@ public class DLogicTransformer {
 
     public Stream<OWLClassExpression> getDefinitions( OWLClassExpression expr ) {
         if ( ! expr.isAnonymous() ) {
-            return EntitySearcher.getEquivalentClasses( expr.asOWLClass(), onto.importsClosure() );
+            return EntitySearcher.getEquivalentClasses( expr.asOWLClass(), onto.importsClosure() )
+                                 .filter( (def) -> ! expr.equals( def ) );
         } else {
             throw new UnsupportedOperationException( "Unable to process " + expr + ", not a named class." );
         }

@@ -2,7 +2,7 @@ package org.kie.semantics.util.editor;
 
 
 import com.clarkparsia.empire.annotation.RdfProperty;
-import org.drools.semantics.Thing;
+import org.kie.semantics.Thing;
 import prefuse.data.Edge;
 import prefuse.data.Graph;
 import prefuse.data.Node;

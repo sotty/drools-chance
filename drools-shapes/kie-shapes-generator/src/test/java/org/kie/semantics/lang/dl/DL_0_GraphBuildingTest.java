@@ -46,7 +46,6 @@ public class DL_0_GraphBuildingTest {
 
 
     @Test
-    @Ignore("needs abductive")
     public void testSequentialCreation() {
         KieServices kieServices = KieServices.Factory.get();
         KieFileSystem kieFileSystem = kieServices.newKieFileSystem();
@@ -68,7 +67,7 @@ public class DL_0_GraphBuildingTest {
 
         System.err.println( reportWMObjects( kSession ) );
 
-        FactType type = knowledgeBase.getFactType("org.drools.semantics.test","SubConceptOf");
+        FactType type = knowledgeBase.getFactType("org.kie.semantics.test","SubConceptOf");
         Collection facts = kSession.getObjects( new ClassObjectFilter( type.getFactClass() ) );
 
         assertEquals( 12, facts.size() );

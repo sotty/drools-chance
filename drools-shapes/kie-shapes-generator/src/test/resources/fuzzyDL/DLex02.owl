@@ -7,7 +7,7 @@ Prefix(xsd:=<http://www.w3.org/2001/XMLSchema#>)
 Prefix(rdfs:=<http://www.w3.org/2000/01/rdf-schema#>)
 
 
-Ontology(<http://jboss.org/drools/semantics/Example02>
+Ontology(<http://jboss.org.kie.semantics/Example02>
 
 Declaration(Class(<_Alien>))
 Declaration(Class(<_Alive>))

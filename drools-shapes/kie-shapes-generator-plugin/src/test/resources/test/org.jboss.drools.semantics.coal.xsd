@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:ns5="http://jboss.org/drools/semantics/coal"
+            xmlns:owl="http://www.w3.org/2002/07/owl" xmlns:tns="http://jboss.org/drools/semantics/Diamond"
+            xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" elementFormDefault="qualified"
+            targetNamespace="http://jboss.org/drools/semantics/coal">
+  <xsd:import namespace="http://www.w3.org/2002/07/owl" schemaLocation="owlThing.xsd"/>
+  <xsd:element name="Y" type="ns5:Y"/>
+  <xsd:complexType name="Y">
+    <xsd:complexContent>
+      <xsd:extension base="owl:Thing">
+        <xsd:sequence/>
+      </xsd:extension>
+    </xsd:complexContent>
+  </xsd:complexType>
+</xsd:schema>

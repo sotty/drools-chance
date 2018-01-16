@@ -2,7 +2,7 @@ package org.kie.semantics.builder.model.hierarchy;
 
 
 import org.kie.semantics.builder.model.Concept;
-import org.drools.semantics.builder.model.OntoModel;
+import org.kie.semantics.builder.model.OntoModel;
 import org.w3._2002._07.owl.Thing;
 
 public class HierarchicalModelProcessor implements ModelHierarchyProcessor {

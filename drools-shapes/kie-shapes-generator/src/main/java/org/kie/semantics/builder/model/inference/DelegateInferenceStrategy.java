@@ -19,17 +19,17 @@ package org.kie.semantics.builder.model.inference;
 import com.google.common.collect.Multimap;
 import org.apache.log4j.Logger;
 import org.drools.core.util.HierarchySorter;
+import org.kie.api.io.Resource;
 import org.kie.semantics.builder.DLFactoryConfiguration;
 import org.kie.semantics.builder.model.Annotations;
 import org.kie.semantics.builder.model.Concept;
-import org.drools.semantics.builder.model.Individual;
-import org.drools.semantics.builder.model.OntoModel;
-import org.drools.semantics.builder.model.PropertyRelation;
-import org.drools.semantics.builder.model.SubConceptOf;
-import org.drools.semantics.utils.NameUtils;
-import org.drools.semantics.utils.NamespaceUtils;
-import org.kie.api.io.Resource;
+import org.kie.semantics.builder.model.Individual;
+import org.kie.semantics.builder.model.OntoModel;
+import org.kie.semantics.builder.model.PropertyRelation;
+import org.kie.semantics.builder.model.SubConceptOf;
 import org.kie.semantics.util.IRIUtils;
+import org.kie.semantics.utils.NameUtils;
+import org.kie.semantics.utils.NamespaceUtils;
 import org.semanticweb.HermiT.ReasonerFactory;
 import org.semanticweb.owlapi.model.AddAxiom;
 import org.semanticweb.owlapi.model.AxiomType;
@@ -102,8 +102,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import static org.kie.semantics.util.IRIUtils.iriOf;
-import static org.drools.semantics.utils.NameUtils.createSuffix;
+import static org.kie.semantics.utils.NameUtils.createSuffix;
 import static org.semanticweb.owlapi.search.EntitySearcher.getAnnotations;
 import static org.semanticweb.owlapi.search.EntitySearcher.getDataPropertyValues;
 import static org.semanticweb.owlapi.search.EntitySearcher.getDomains;
@@ -1383,7 +1382,9 @@ public class DelegateInferenceStrategy extends AbstractModelInferenceStrategy {
 				}
 			});
 
-			getEquivalentClasses( klass, ontoDescr.importsClosure() ).forEach( (clax) -> {
+			getEquivalentClasses( klass, ontoDescr.importsClosure() )
+					.filter( (def) -> ! klass.equals( def ) )
+					.forEach( (clax) -> {
 				if ( processQuantifiedRestrictionsInClass( klass, clax.getNNF(), ontoDescr ) ) {
 					classes.add( clax );
 				}
