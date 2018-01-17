@@ -6,7 +6,7 @@ import org.semanticweb.ontologies._2012._1.rules.*;
 import org.semanticweb.ontologies._2012._1.rule_example.*;
 import org.drools.compiler.lang.api.*;
 import org.drools.compiler.lang.descr.*;
-import org.drools.semantics.UIdAble;
+import org.kie.semantics.UIdAble;
 
 
 global PackageDescr pack;

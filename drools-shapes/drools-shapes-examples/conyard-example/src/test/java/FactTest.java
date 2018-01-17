@@ -4,6 +4,7 @@ import com.clarkparsia.empire.config.ConfigKeys;
 import com.clarkparsia.empire.sesame.OpenRdfEmpireModule;
 import com.clarkparsia.empire.sesame.RepositoryDataSourceFactory;
 import org.drools.core.io.impl.ClassPathResource;
+import org.drools.owl.conyard.Activity;
 import org.drools.owl.conyard.Equipment;
 import org.drools.owl.conyard.EquipmentImpl;
 import org.drools.owl.conyard.Guest;
@@ -25,7 +26,7 @@ import org.drools.owl.conyard.Smith;
 import org.drools.owl.conyard.SmithImpl;
 import org.drools.owl.conyard.Stair;
 import org.drools.owl.conyard.StairImpl;
-import org.drools.semantics.XMLSerializationHelper;
+import org.kie.semantics.XMLSerializationHelper;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
@@ -190,7 +191,17 @@ public class FactTest {
         for ( Labourer lab : labs) {
             if ( lab.getParticipatesIn().size() > 0 ) {
                 found = true;
-                assertSame( painting, lab.getParticipatesIn().get( 0 ) );
+                Activity a = lab.getParticipatesIn().get( 0 );
+
+                assertTrue( a instanceof Painting );
+	            Painting p3 = (Painting) a;
+
+	            assertEquals( painting.getHasComment(), p3.getHasComment() );
+	            assertEquals( painting.getOid(), p3.getOid() );
+	            assertEquals( painting.getId(), p3.getId() );
+	            assertEquals( painting.getEndsOn(), p3.getEndsOn() );
+	            assertEquals( 3, p3.getInvolves().size() );
+
             }
         }
 
@@ -468,7 +479,7 @@ public class FactTest {
 
         Painting p2 = (Painting) refreshOnJPA( painting, painting.getRdfId(), em );
 
-        assertTrue( p2 instanceof Painting );
+        assertTrue( p2 != null );
         assertTrue( p2 instanceof PaintingImpl );
         assertEquals(  new Integer(10), p2.getRequiresStair().getStairLength() );
 
@@ -591,7 +602,9 @@ public class FactTest {
 
         try {
             Marshaller marsh = XMLSerializationHelper.createMarshaller( painting.getClass().getPackage().getName(), schema );
-            marsh.marshal( painting, writer );
+	        if ( marsh != null ) {
+		        marsh.marshal( painting, writer );
+	        }
         } catch (JAXBException e) {
             e.printStackTrace();
             fail( e.getMessage() );
@@ -607,9 +620,7 @@ public class FactTest {
         try {
             validator.validate(source);
         }
-        catch ( SAXException ex ) {
-            fail( ex.getMessage() );
-        } catch ( IOException ex ) {
+        catch ( SAXException | IOException ex ) {
             fail( ex.getMessage() );
         }
 

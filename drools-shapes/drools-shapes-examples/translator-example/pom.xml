@@ -26,32 +26,17 @@
     <version>1.0-SNAPSHOT</version>
   </parent>
 
-  <name>Drools :: Semantic Translator Example</name>
+  <name>KIE :: Shapes - Semantic Translator Example</name>
 
-  <groupId>org.drools</groupId>
-  <artifactId>translator-example</artifactId>
+  <artifactId>kie-shapes-translator-example</artifactId>
   <version>1.0-SNAPSHOT</version>
+
   <properties>
-    <drools.version>7.5.0.Final</drools.version>
+    <drools.version>7.6.0-SNAPSHOT</drools.version>
     <jpa.provider>hibernate</jpa.provider>
     <!--jpa.provider>datanucleus</jpa.provider-->
   </properties>
 
-
-  <pluginRepositories>
-    <pluginRepository>
-      <id>DataNucleus_2</id>
-      <url>http://www.datanucleus.org/downloads/maven2/</url>
-    </pluginRepository>
-    <pluginRepository>
-      <id>EmpireRDF</id>
-      <url>https://github.com/EmpireRDF/mavenRepo/raw/master/releases</url>
-    </pluginRepository>
-    <pluginRepository>
-      <id>EmpireRDF-snapshot</id>
-      <url>https://github.com/EmpireRDF/mavenRepo/raw/master/snapshots</url>
-    </pluginRepository>
-  </pluginRepositories>
 
   <dependencies>
 
@@ -68,7 +53,7 @@
     </dependency>
     <dependency>
       <groupId>org.jvnet.hyperjaxb3</groupId>
-      <artifactId>maven-hyperjaxb3-plugin</artifactId>
+      <artifactId>hyperjaxb3-maven-plugin</artifactId>
     </dependency>
 
     <!-- Empire can be found here: https://github.com/mhgrove/Empire -->
@@ -81,7 +66,6 @@
     <dependency>
       <groupId>com.clarkparsia.empire</groupId>
       <artifactId>sesame</artifactId>
-      <version>1.0</version>
       <scope>test</scope>
     </dependency>
 

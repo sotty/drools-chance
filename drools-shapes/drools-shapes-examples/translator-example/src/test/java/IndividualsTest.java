@@ -1,6 +1,6 @@
 import org.drools.compiler.lang.DrlDumper;
 import org.drools.compiler.lang.descr.PackageDescr;
-import org.drools.semantics.XMLSerializationHelper;
+import org.kie.semantics.XMLSerializationHelper;
 import org.junit.Assert;
 import org.junit.Test;
 import org.kie.api.KieBase;

@@ -1,9 +1,9 @@
 package editor;
 
-import org.drools.semantics.Thing;
-import org.drools.semantics.util.editor.FactGraphAnalyzer;
-import org.drools.semantics.util.editor.ObjectDescriptor;
-import org.drools.semantics.util.editor.RelationDescriptor;
+import org.kie.semantics.Thing;
+import org.kie.semantics.util.editor.FactGraphAnalyzer;
+import org.kie.semantics.util.editor.ObjectDescriptor;
+import org.kie.semantics.util.editor.RelationDescriptor;
 import prefuse.Visualization;
 import prefuse.controls.ControlAdapter;
 import prefuse.data.Edge;
