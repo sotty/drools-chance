@@ -1,5 +1,6 @@
 package org.drools.compiler.builder.impl;
 
+import it.unibo.deis.lia.org.drools.expectations.DRLExpectationHelper;
 import it.unibo.deis.lia.org.drools.expectations.ECEVisitor;
 import org.antlr.runtime.CommonTokenStream;
 import org.drools.compiler.compiler.DroolsParserException;
@@ -10,19 +11,18 @@ import org.drools.compiler.lang.DrlDumper;
 import org.drools.compiler.lang.ECEParser;
 import org.drools.compiler.lang.api.ECEPackageDescrBuilder;
 import org.drools.compiler.lang.descr.PackageDescr;
-import it.unibo.deis.lia.org.drools.expectations.DRLExpectationHelper;
 import org.drools.core.io.internal.InternalResource;
+import org.kie.api.internal.assembler.KieAssemblerService;
+import org.kie.api.internal.assembler.KieAssemblers;
+import org.kie.api.internal.utils.ServiceRegistry;
 import org.kie.api.io.Resource;
 import org.kie.api.io.ResourceConfiguration;
 import org.kie.api.io.ResourceType;
-import org.kie.internal.assembler.KieAssemblerService;
-import org.kie.internal.builder.KnowledgeBuilder;
 import org.kie.internal.builder.conf.LanguageLevelOption;
 
 import java.io.InputStream;
 
 import static org.drools.compiler.compiler.DRLFactory.buildLexer;
-import static org.drools.compiler.compiler.DRLFactory.buildParser;
 
 public class ExpectAssemblerService implements KieAssemblerService {
 
@@ -32,12 +32,7 @@ public class ExpectAssemblerService implements KieAssemblerService {
     }
 
     @Override
-    public Class getServiceInterface() {
-        return KieAssemblerService.class;
-    }
-
-    @Override
-    public void addResource( KnowledgeBuilder kbuilder, Resource resource, ResourceType type, ResourceConfiguration configuration ) throws Exception {
+    public void addResource( Object kbuilder, Resource resource, ResourceType type, ResourceConfiguration configuration ) throws Exception {
         InputStream is = resource.getInputStream();
         String encoding = resource instanceof InternalResource ? ((InternalResource) resource).getEncoding() : null;
         DRLLexer lexer = buildLexer( is, encoding, LanguageLevelOption.DRL6 );

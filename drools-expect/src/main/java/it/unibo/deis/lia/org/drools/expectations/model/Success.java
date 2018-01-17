@@ -1,5 +1,6 @@
 package it.unibo.deis.lia.org.drools.expectations.model;
 
+import org.kie.api.definition.type.Expires;
 import org.kie.api.definition.type.Role;
 
 import java.io.Serializable;

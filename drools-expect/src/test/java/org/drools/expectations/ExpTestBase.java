@@ -16,57 +16,45 @@
 
 package org.drools.expectations;
 
-import static org.kie.api.runtime.EnvironmentName.GLOBALS;
-import static org.kie.api.runtime.EnvironmentName.CALENDARS;
+import it.unibo.deis.lia.org.drools.expectations.DRLExpectationHelper;
 import it.unibo.deis.lia.org.drools.expectations.ECEHelper;
 import it.unibo.deis.lia.org.drools.expectations.model.Expectation;
-import it.unibo.deis.lia.org.drools.expectations.model.ExpectationContext;
-import org.drools.compiler.builder.impl.ECE;
-import org.drools.compiler.builder.impl.KnowledgeBuilderImpl;
-import it.unibo.deis.lia.org.drools.expectations.DRLExpectationHelper;
-import org.drools.core.ClockType;
 import org.drools.core.WorkingMemory;
 import org.drools.core.common.DefaultFactHandle;
 import org.drools.core.common.DroolsObjectInputStream;
 import org.drools.core.common.DroolsObjectOutputStream;
 import org.drools.core.common.EventFactHandle;
-import org.drools.core.marshalling.impl.ClassObjectMarshallingStrategyAcceptor;
-import org.drools.core.marshalling.impl.IdentityPlaceholderResolverStrategy;
 import org.drools.core.spi.Activation;
 import org.drools.core.spi.ConsequenceExceptionHandler;
 import org.drools.core.time.SessionPseudoClock;
-import org.drools.core.util.DroolsStreamUtils;
 import org.kie.api.KieBase;
-import org.kie.api.KieBaseConfiguration;
 import org.kie.api.KieServices;
-import org.kie.api.conf.EventProcessingOption;
-import org.kie.api.definition.KiePackage;
 import org.kie.api.definition.type.FactType;
 import org.kie.api.marshalling.KieMarshallers;
 import org.kie.api.marshalling.Marshaller;
 import org.kie.api.marshalling.ObjectMarshallingStrategy;
 import org.kie.api.marshalling.ObjectMarshallingStrategyAcceptor;
-import org.kie.api.runtime.*;
+import org.kie.api.runtime.Calendars;
+import org.kie.api.runtime.ClassObjectFilter;
+import org.kie.api.runtime.Environment;
+import org.kie.api.runtime.Globals;
+import org.kie.api.runtime.KieSession;
+import org.kie.api.runtime.KieSessionConfiguration;
 import org.kie.api.runtime.rule.FactHandle;
 import org.kie.api.time.SessionClock;
-import org.kie.internal.KnowledgeBase;
-import org.kie.internal.KnowledgeBaseFactory;
-import org.kie.internal.builder.conf.RuleEngineOption;
-import org.kie.internal.definition.KnowledgePackage;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.text.DecimalFormat;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
 import java.util.PriorityQueue;
 import java.util.concurrent.TimeUnit;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+import static org.kie.api.runtime.EnvironmentName.CALENDARS;
+import static org.kie.api.runtime.EnvironmentName.GLOBALS;
 
 public class ExpTestBase {
 

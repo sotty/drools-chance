@@ -11,8 +11,6 @@ import org.drools.core.common.InternalFactHandle;
 import org.kie.api.runtime.rule.FactHandle;
 import org.kie.api.runtime.rule.Match;
 
-import java.util.List;
-
 public class Expectations {
 
     public static Expectation newExpectation( String label,

@@ -18,12 +18,28 @@ package org.drools.expectations;
 
 import it.unibo.deis.lia.org.drools.expectations.Expectations;
 import it.unibo.deis.lia.org.drools.expectations.model.*;
+import org.drools.core.audit.WorkingMemoryConsoleLogger;
+import org.drools.core.event.DebugAgendaEventListener;
+import org.drools.core.event.DebugRuleRuntimeEventListener;
 import org.drools.core.marshalling.impl.ClassObjectMarshallingStrategyAcceptor;
 import org.drools.core.marshalling.impl.IdentityPlaceholderResolverStrategy;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.kie.api.KieBase;
 import org.kie.api.KieServices;
+import org.kie.api.event.rule.AfterMatchFiredEvent;
+import org.kie.api.event.rule.AgendaEventListener;
+import org.kie.api.event.rule.AgendaGroupPoppedEvent;
+import org.kie.api.event.rule.AgendaGroupPushedEvent;
+import org.kie.api.event.rule.BeforeMatchFiredEvent;
+import org.kie.api.event.rule.MatchCancelledEvent;
+import org.kie.api.event.rule.MatchCreatedEvent;
+import org.kie.api.event.rule.ObjectDeletedEvent;
+import org.kie.api.event.rule.ObjectInsertedEvent;
+import org.kie.api.event.rule.ObjectUpdatedEvent;
+import org.kie.api.event.rule.RuleFlowGroupActivatedEvent;
+import org.kie.api.event.rule.RuleFlowGroupDeactivatedEvent;
+import org.kie.api.event.rule.RuleRuntimeEventListener;
 import org.kie.api.marshalling.ObjectMarshallingStrategy;
 import org.kie.api.runtime.KieSession;
 
@@ -302,8 +318,8 @@ public class ExpectationTest extends ExpTestBase {
                 "when " +
                 "   $trigger : Msg( 'John', 'Peter', 'Hello' ; ) " +
                 "then " +
-                "   expect Msg( 'Peter', 'John', 'Hello back', $more ; this after[0,100ms] $trigger ) " +
-                "   onFulfill { " +
+		        "   expect Msg( 'Peter', 'John', 'Hello back', $more ; this after[0,100ms] $trigger ) " +
+		        "   onFulfill { " +
                 "        \t list.add( 'F1' + $more ); \n" +
                 "        \t System.out.println( 'Expectation fulfilled' ); \n" +
                 "    } onViolation { " +

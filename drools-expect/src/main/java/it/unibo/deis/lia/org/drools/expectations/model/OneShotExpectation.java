@@ -1,6 +1,5 @@
 package it.unibo.deis.lia.org.drools.expectations.model;
 
-import it.unibo.deis.lia.org.drools.expectations.model.Expectation;
 import org.kie.api.definition.type.PropertyReactive;
 import org.kie.api.runtime.rule.Match;
 

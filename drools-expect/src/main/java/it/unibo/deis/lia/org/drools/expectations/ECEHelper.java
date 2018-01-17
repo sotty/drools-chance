@@ -1,33 +1,25 @@
 package it.unibo.deis.lia.org.drools.expectations;
 
 import org.drools.compiler.builder.impl.ECE;
+import org.drools.compiler.builder.impl.ExpectAssemblerService;
 import org.drools.compiler.builder.impl.KnowledgeBuilderImpl;
 import org.drools.core.ClockType;
+import org.drools.core.impl.InternalKnowledgeBase;
 import org.kie.api.KieBase;
-import org.kie.api.KieBaseConfiguration;
 import org.kie.api.KieServices;
 import org.kie.api.conf.EventProcessingOption;
 import org.kie.api.conf.KieBaseOption;
-import org.kie.api.definition.KiePackage;
+import org.kie.api.internal.assembler.KieAssemblers;
+import org.kie.api.internal.utils.ServiceRegistry;
 import org.kie.api.io.Resource;
 import org.kie.api.io.ResourceType;
 import org.kie.api.runtime.KieSession;
 import org.kie.api.runtime.KieSessionConfiguration;
 import org.kie.api.runtime.conf.ClockTypeOption;
-import org.kie.internal.KnowledgeBase;
-import org.kie.internal.KnowledgeBaseFactory;
-import org.kie.internal.builder.conf.RuleEngineOption;
-import org.kie.internal.definition.KnowledgePackage;
 import org.kie.internal.utils.KieHelper;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
 
 public class ECEHelper extends KieHelper {
 
@@ -37,15 +29,19 @@ public class ECEHelper extends KieHelper {
 
     @Override
     public KieBase build( KieBaseOption... options ) {
-        addResource( KieServices.Factory.get().getResources().newClassPathResource( "it/unibo/deis/lia/org/drools/expectations/expect_axioms.drl" ), ResourceType.DRL );
-        KieBase kieBase = super.build( options );
+
+	    KieAssemblers assemblers = ServiceRegistry.getInstance().get( KieAssemblers.class );
+	    assemblers.getAssemblers().put( ECE.ECE, new ExpectAssemblerService() );
+
+	    addResource( KieServices.Factory.get().getResources().newClassPathResource( "it/unibo/deis/lia/org/drools/expectations/expect_axioms.drl" ), ResourceType.DRL );
+	    KieBase kieBase = super.build( options );
 
         KnowledgeBuilderImpl kbuilder = new KnowledgeBuilderImpl();
         for ( Resource res : eceResources ) {
             kbuilder.add( res, ECE.ECE );
         }
 
-        ( (KnowledgeBase) kieBase ).addKnowledgePackages( kbuilder.getKnowledgePackages() );
+	    (( InternalKnowledgeBase)kieBase).addPackages( kbuilder.getKnowledgePackages() );
 
         return kieBase;
     }

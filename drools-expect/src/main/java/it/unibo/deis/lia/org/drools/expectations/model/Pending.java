@@ -1,13 +1,10 @@
 package it.unibo.deis.lia.org.drools.expectations.model;
 
-import it.unibo.deis.lia.org.drools.expectations.Expectations;
-import org.drools.core.common.InternalFactHandle;
+import org.kie.api.definition.type.Expires;
 import org.kie.api.definition.type.Key;
 import org.kie.api.definition.type.Position;
 import org.kie.api.definition.type.PropertyReactive;
 import org.kie.api.definition.type.Role;
-import org.kie.api.runtime.rule.FactHandle;
-import org.kie.api.runtime.rule.Match;
 
 import java.io.Serializable;
 import java.util.List;

@@ -32,7 +32,6 @@ import org.drools.compiler.lang.descr.OrDescr;
 import org.drools.compiler.lang.descr.PackageDescr;
 import org.drools.compiler.lang.descr.RuleDescr;
 import org.drools.compiler.lang.descr.XorDescr;
-import org.drools.core.util.StringUtils;
 
 import java.util.ArrayList;
 import java.util.List;

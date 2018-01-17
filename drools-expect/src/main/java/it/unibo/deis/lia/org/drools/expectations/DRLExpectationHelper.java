@@ -24,10 +24,26 @@ import org.drools.compiler.lang.api.ECEPackageDescrBuilder;
 import org.drools.compiler.lang.api.PackageDescrBuilder;
 import org.drools.compiler.lang.api.PatternDescrBuilder;
 import org.drools.compiler.lang.api.RuleDescrBuilder;
-import org.drools.compiler.lang.descr.*;
+import org.drools.compiler.lang.descr.AndDescr;
+import org.drools.compiler.lang.descr.AttributeDescr;
+import org.drools.compiler.lang.descr.BaseDescr;
+import org.drools.compiler.lang.descr.BindingDescr;
+import org.drools.compiler.lang.descr.ConditionalElementDescr;
+import org.drools.compiler.lang.descr.ExpectationDescr;
+import org.drools.compiler.lang.descr.ExpectationRuleDescr;
+import org.drools.compiler.lang.descr.ExprConstraintDescr;
+import org.drools.compiler.lang.descr.NamedConsequenceDescr;
+import org.drools.compiler.lang.descr.NotDescr;
+import org.drools.compiler.lang.descr.OrDescr;
+import org.drools.compiler.lang.descr.PatternDescr;
+import org.drools.compiler.lang.descr.RuleDescr;
 import org.drools.core.util.StringUtils;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
 
 public class DRLExpectationHelper {
 
@@ -124,6 +140,8 @@ public class DRLExpectationHelper {
             expect.isQuery(false);
             expect.id(expLabel, false);
             expect.constraint("label == \"" + expLabel + "\"", false);
+            // FIXME Not strictly necessary due to @PR, but as of 7.6.0-SNAPSHOT there may be a bug
+            expect.constraint( "active == true", false );
     }
 
 

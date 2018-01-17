@@ -1,10 +1,16 @@
 package it.unibo.deis.lia.org.drools.expectations;
 
-import org.drools.compiler.compiler.DescrBuildError;
 import org.drools.compiler.compiler.DrlExprParser;
-import org.drools.compiler.compiler.DroolsParserException;
-import org.drools.compiler.lang.descr.*;
-import org.drools.core.base.evaluators.Operator;
+import org.drools.compiler.lang.descr.AndDescr;
+import org.drools.compiler.lang.descr.BaseDescr;
+import org.drools.compiler.lang.descr.ConstraintConnectiveDescr;
+import org.drools.compiler.lang.descr.ExprConstraintDescr;
+import org.drools.compiler.lang.descr.ForallDescr;
+import org.drools.compiler.lang.descr.NotDescr;
+import org.drools.compiler.lang.descr.OperatorDescr;
+import org.drools.compiler.lang.descr.OrDescr;
+import org.drools.compiler.lang.descr.PatternDescr;
+import org.drools.compiler.lang.descr.RelationalExprDescr;
 import org.drools.core.base.evaluators.TimeIntervalParser;
 import org.kie.internal.builder.conf.LanguageLevelOption;
 
@@ -12,8 +18,6 @@ import java.util.HashSet;
 import java.util.Set;
 
 public class ExpirationCalc {
-
-    private static TimeIntervalParser tp = new TimeIntervalParser();
 
     public static long calcExpirationOffset( AndDescr trigger, BaseDescr ce ) {
         if ( ce instanceof AndDescr ) {
@@ -37,7 +41,7 @@ public class ExpirationCalc {
         } else if ( ce instanceof PatternDescr ) {
             return calcExpirationOffsetForPattern( trigger, (PatternDescr) ce );
         } else if ( ce instanceof NotDescr ) {
-            return calcExpirationOffset( trigger, (BaseDescr) ( (NotDescr) ce ).getDescrs().get( 0 ) );
+            return calcExpirationOffset( trigger, ( (NotDescr) ce ).getDescrs().get( 0 ) );
         } else {
             throw new UnsupportedOperationException( "Defensive : unsupported operation" );
         }
@@ -103,7 +107,7 @@ public class ExpirationCalc {
             if ( op.getParameters() == null || op.getParameters().isEmpty() || op.getParameters().size() == 1 ) {
                 return Long.MAX_VALUE;
             } else if ( op.getParameters().size() == 2 ) {
-                Long[] range = tp.parse( op.getParametersText() );
+                long[] range = TimeIntervalParser.parse( op.getParametersText() );
                 return Math.max( range[ 0 ], range[ 1 ] );
             } else {
                 throw new IllegalStateException( "After operator can have 2 param max, found " + op.getParameters() );
@@ -112,7 +116,7 @@ public class ExpirationCalc {
                 if ( op.getParameters() == null || op.getParameters().isEmpty() || op.getParameters().size() == 1 ) {
                     return 0;
                 } else if ( op.getParameters().size() == 2 ) {
-                    Long[] range = tp.parse( op.getParametersText() );
+                    long[] range = TimeIntervalParser.parse( op.getParametersText() );
                     return Math.max( 0, - Math.min( - range[ 0 ], - range[ 1 ] ) );
                 } else {
                     throw new IllegalStateException( "After operator can have 2 param max, found " + op.getParameters() );
