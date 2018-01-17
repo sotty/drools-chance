@@ -18,11 +18,14 @@ package org.kie.semantics.lang.dl;
 
 import com.clarkparsia.empire.Empire;
 import com.clarkparsia.empire.EmpireOptions;
+import com.clarkparsia.empire.annotation.RdfGenerator;
+import com.clarkparsia.empire.annotation.RdfsClass;
 import com.clarkparsia.empire.config.ConfigKeys;
 import com.clarkparsia.empire.config.EmpireConfiguration;
 import com.clarkparsia.empire.jena.JenaEmpireModule;
-import com.clarkparsia.empire.sesame.OpenRdfEmpireModule;
+import com.clarkparsia.empire.spi.EmpirePersistenceProvider;
 import com.clarkparsia.empire.util.DefaultEmpireModule;
+import com.clarkparsia.empire.util.PropertiesAnnotationProvider;
 import com.hp.hpl.jena.ontology.OntModel;
 import com.hp.hpl.jena.rdf.model.ModelFactory;
 import org.apache.commons.lang3.StringUtils;
@@ -71,13 +74,12 @@ import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpression;
 import javax.xml.xpath.XPathFactory;
 import java.io.File;
-import java.io.FileFilter;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.io.StringReader;
 import java.io.StringWriter;
+import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.URL;
@@ -703,7 +705,7 @@ public class DL_9_CompilationTest {
             compiler2.streamJavaInterfaces( false );
             compiler2.streamXSDsWithBindings();
 
-            compiler2.mojo( OntoModelCompiler.defaultOptions, OntoModelCompiler.MOJO_VARIANTS.JPA2, urlKL );
+            compiler2.mojo( OntoModelCompiler.defaultOptions, OntoModelCompiler.MOJO_VARIANTS.JPA2 );
 
 	        showDirContent( folder );
 
@@ -937,8 +939,8 @@ public class DL_9_CompilationTest {
 
 
             checkJPARefresh( obj,
-                    ((UIdAble) obj).getRdfId(),
-                    initEmpireEM(config, annox, obj.getClass().getPackage().getName()));
+                             ((UIdAble) obj).getRdfId(),
+                             reinitEmpireEM( config, annox, obj.getClass().getPackage().getName() ) );
         } finally {
             Thread.currentThread().setContextClassLoader( oldKL );
         }
@@ -974,8 +976,9 @@ public class DL_9_CompilationTest {
         Object cX = obj2.getClass().getMethod( "getObjPropX" ).invoke( obj2 );
         assertNotNull( cX );
         System.out.println( cX );
+
         assertTrue( cX.getClass().getName().endsWith( "XImpl" ) );
-        assertEquals( aX, cX );
+        assertEquals( cX, aX );
 
         Object a2 = obj.getClass().getMethod( "getC2Prop" ).invoke( obj );
         Object c2 = obj2.getClass().getMethod( "getC2Prop" ).invoke( obj2 );
@@ -986,13 +989,21 @@ public class DL_9_CompilationTest {
         assertEquals( a2, c2 );
     }
 
-    private EntityManager initEmpireEM( File config, File annox, String pack ) {
+    private EntityManager reinitEmpireEM( File config, File annox, String pack ) {
         System.setProperty( "empire.configuration.file", config.getPath() );
 
 	    EmpireConfiguration ecfg = DefaultEmpireModule.readConfiguration();
         ecfg.getGlobalConfig().put( ConfigKeys.ANNOTATION_INDEX, annox.getPath() );
-        Empire.init( ecfg, new JenaEmpireModule( ) );
-        EmpireOptions.STRICT_MODE = false;
+	    EmpireOptions.STRICT_MODE = false;
+
+	    try {
+		    Field singleton = Empire.class.getDeclaredField( "INSTANCE" );
+		    singleton.setAccessible( true );
+		    singleton.set( null, null );
+	    } catch ( IllegalAccessException | NoSuchFieldException e ) {
+		    e.printStackTrace();
+	    }
+	    Empire.init( ecfg, new JenaEmpireModule( ) );
 
         PersistenceProvider aProvider = Empire.get().persistenceProvider();
 

@@ -610,10 +610,6 @@ public class OntoModelCompiler {
 
 
     public boolean mojo( List<String> args, MOJO_VARIANTS variant ) {
-        return mojo( args, variant, null );
-    }
-
-    public boolean mojo( List<String> args, MOJO_VARIANTS variant, ClassLoader loader ) {
         boolean success = false;
         try {
             File pom = new File( folder.getPath() + File.separator + "pom.xml" );
@@ -683,15 +679,8 @@ public class OntoModelCompiler {
 
             mojo.setForceRegenerate( true );
 
-            if ( loader != null ) {
-            	ClassLoader current = Thread.currentThread().getContextClassLoader();
-            	Thread.currentThread().setContextClassLoader( loader );
-	            mojo.execute();
-	            Thread.currentThread().setContextClassLoader( current );
-            } else {
-            	mojo.execute();
-            }
-            success = true;
+            mojo.execute();
+	        success = true;
         } catch (MojoExecutionException e) {
             e.printStackTrace();
         }

@@ -11,7 +11,7 @@
   </scoreDirectorFactory>
 
   <termination>
-    <secondsSpentLimit>10</secondsSpentLimit>>
+    <secondsSpentLimit>5</secondsSpentLimit>>
   </termination>
 
 
@@ -27,10 +27,10 @@
       <simulatedAnnealingStartingTemperature>10hard/100soft</simulatedAnnealingStartingTemperature>
     </acceptor>
     <forager>
-      <acceptedCountLimit>250</acceptedCountLimit>
+      <acceptedCountLimit>25</acceptedCountLimit>
     </forager>
     <termination>
-      <unimprovedStepCountLimit>25</unimprovedStepCountLimit>
+      <unimprovedStepCountLimit>5</unimprovedStepCountLimit>
     </termination>
   </localSearch>
 

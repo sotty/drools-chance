@@ -28,7 +28,7 @@
   <packaging>maven-plugin</packaging>
 
 
-  <name>KIE:: Shapes Generator Plugin</name>
+  <name>KIE :: Shapes Generator Plugin</name>
   <url>http://maven.apache.org</url>
 
   <dependencies>
@@ -67,19 +67,6 @@
     </dependency>
 
     <dependency>
-      <groupId>com.sun.tools.xjc.maven2</groupId>
-      <artifactId>maven-jaxb-plugin</artifactId>
-    </dependency>
-
-    <dependency>
-      <groupId>com.sun.xml.bind</groupId>
-      <artifactId>jaxb-impl</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>com.sun.xml.bind</groupId>
-      <artifactId>jaxb-xjc</artifactId>
-    </dependency>
-    <dependency>
       <groupId>org.jvnet.jaxb2_commons</groupId>
       <artifactId>jaxb2-value-constructor</artifactId>
     </dependency>
@@ -91,7 +78,7 @@
 
     <dependency>
       <groupId>org.jvnet.hyperjaxb3</groupId>
-      <artifactId>maven-hyperjaxb3-plugin</artifactId>
+      <artifactId>hyperjaxb3-maven-plugin</artifactId>
     </dependency>
 
 

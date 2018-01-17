@@ -16,6 +16,7 @@
 
 package org.kie.semantics.builder.model.compilers;
 
+import com.clarkparsia.empire.annotation.RdfsClass;
 import org.jdom.Namespace;
 import org.kie.internal.io.ResourceFactory;
 import org.kie.semantics.builder.DLTemplateManager;
@@ -41,6 +42,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringReader;
+import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -49,10 +51,12 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 public class SemanticXSDModelCompilerImpl extends XSDModelCompilerImpl implements SemanticXSDModelCompiler {
 
@@ -252,36 +256,22 @@ public class SemanticXSDModelCompilerImpl extends XSDModelCompilerImpl implement
     public void mergeIndex( File preexistingIndex, SemanticXSDModel model ) {
         FileInputStream bis = null;
         try {
-            bis = new FileInputStream( preexistingIndex );
-            byte[] an = new byte[ bis.available() ];
-            bis.read(  an  );
+            Properties oldP = new Properties();
+                oldP.load( new FileInputStream( preexistingIndex ) );
+            Properties newP = new Properties();
+                newP.load( new ByteArrayInputStream( model.getIndex().getBytes() ) );
 
-            String old = new String( an );
-            String nju = model.getIndex();
-            Set<String> oldTypes = new HashSet<String>();
-            int j = old.indexOf( "javax.persistence.NamedQuery=" ) -1;
+            Set<String> oldTypes = Arrays.stream( oldP.getProperty( RdfsClass.class.getName() )
+                                                      .split( "," ) ).collect( Collectors.toSet() );
+	        Set<String> newTypes = Arrays.stream( newP.getProperty( RdfsClass.class.getName() )
+	                                                  .split( "," ) ).collect( Collectors.toSet() );
+			newTypes.addAll( oldTypes );
+			newP.setProperty( RdfsClass.class.getName(), String.join( ",", newTypes ) );
 
-            StringBuilder newIndex = new StringBuilder();
-            newIndex.append( old.substring( 0, j ) );
+	        StringWriter sw = new StringWriter();
+			newP.store( sw, "" );
 
-            StringTokenizer tok = new StringTokenizer( old, "=,\n" );
-            while ( tok.hasMoreTokens() ) {
-                oldTypes.add( tok.nextToken() );
-            }
-            tok = new StringTokenizer( nju, "=,\n" );
-            while ( tok.hasMoreTokens() ) {
-                String t = tok.nextToken();
-                if ( ! oldTypes.contains( t ) ) {
-                    newIndex.append( "," ).append( tok.nextToken() );
-                }
-            }
-
-            newIndex.append( old.substring( j ) );
-
-//            System.out.println( "OLD INDEX " + old );
-//            System.out.println( "NEW INDEX " + newIndex );
-
-            model.setIndex( newIndex.toString() );
+            model.setIndex( sw.toString() );
         } catch ( Exception e ) {
             e.printStackTrace();
         }
