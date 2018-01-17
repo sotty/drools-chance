@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:tns="http://some/dependency/test"
+            xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:ns4="http://jboss.org/drools/semantics/Diamond"
+            xmlns:owl="http://www.w3.org/2002/07/owl"
+            xmlns:ns6="http://some/dependency/test/org/jboss/drools/semantics/diamond" elementFormDefault="qualified"
+            targetNamespace="http://some/dependency/test">
+  <xsd:import namespace="http://some/dependency/test/org/jboss/drools/semantics/diamond"
+              schemaLocation="some.dependency.test.org.jboss.drools.semantics.diamond.xsd"/>
+  <xsd:import namespace="http://jboss.org/drools/semantics/Diamond"
+              schemaLocation="org.jboss.drools.semantics.diamond.xsd"/>
+  <xsd:element name="ChildOfLeft" type="tns:ChildOfLeft"/>
+  <xsd:complexType name="ChildOfLeft">
+    <xsd:complexContent>
+      <xsd:extension base="ns6:Left">
+        <xsd:sequence>
+          <xsd:element name="importantProp" type="ns4:Bottom" minOccurs="0" maxOccurs="unbounded"/>
+        </xsd:sequence>
+      </xsd:extension>
+    </xsd:complexContent>
+  </xsd:complexType>
+</xsd:schema>
