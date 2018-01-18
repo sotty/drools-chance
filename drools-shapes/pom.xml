@@ -36,11 +36,9 @@
 
     <module>kie-shapes-terms</module>
 
-    <module>kie-shapes-generator</module>
-    <module>kie-shapes-generator-plugin</module>
+    <module>kie-shapes-generator-parent</module>
 
-    <module>kie-shapes-xsd-processor</module>
-    <module>kie-shapes-xsd-processor-plugin</module>
+    <module>kie-shapes-xsd-processor-parent</module>
 
     <module>kie-shapes-examples</module>
   </modules>

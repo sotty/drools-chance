@@ -9,8 +9,7 @@
     <module>kie-shapes-terms-impl</module>
     <module>kie-shapes-terms-cts2-impl</module>
 
-    <module>kie-shapes-terms-generator</module>
-    <module>kie-shapes-terms-generator-plugin</module>
+    <module>kie-shapes-terms-generator-parent</module>
   </modules>
 
   <parent>
