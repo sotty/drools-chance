@@ -17,6 +17,7 @@
 package org.kie.semantics.builder.model.inference;
 
 import com.google.common.collect.Multimap;
+import com.hp.hpl.jena.vocabulary.OWL;
 import org.apache.log4j.Logger;
 import org.drools.core.util.HierarchySorter;
 import org.kie.api.io.Resource;
@@ -75,6 +76,7 @@ import org.semanticweb.owlapi.model.OWLOntologyChange;
 import org.semanticweb.owlapi.model.OWLProperty;
 import org.semanticweb.owlapi.model.OWLSubClassOfAxiom;
 import org.semanticweb.owlapi.model.RemoveAxiom;
+import org.semanticweb.owlapi.model.parameters.ChangeApplied;
 import org.semanticweb.owlapi.model.parameters.Imports;
 import org.semanticweb.owlapi.reasoner.ConsoleProgressMonitor;
 import org.semanticweb.owlapi.reasoner.InferenceType;
@@ -99,8 +101,10 @@ import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static org.kie.semantics.utils.NameUtils.createSuffix;
 import static org.semanticweb.owlapi.search.EntitySearcher.getAnnotations;
@@ -128,6 +132,9 @@ public class DelegateInferenceStrategy extends AbstractModelInferenceStrategy {
 	private Map<String, Concept> conceptCache = new LinkedHashMap<>();
 	private Map<String, String> individualTypesCache = new HashMap<>();
 	private Map<String, String> props = new HashMap<>();
+
+	private Map<OWLClassExpression, OWLClass> restrictedFillerCache = new HashMap<>();
+
 
 
 	private static void register( String prim, String klass ) {
@@ -794,8 +801,8 @@ public class DelegateInferenceStrategy extends AbstractModelInferenceStrategy {
 						}
 
 						rel.setDomain( con );
+						rel = hierarchicalModel.addProperty( rel );
 						con.addProperty( rel.getProperty(), rel );
-						hierarchicalModel.addProperty( rel );
 						rel.resolve();
 					}
 				}
@@ -1095,56 +1102,78 @@ public class DelegateInferenceStrategy extends AbstractModelInferenceStrategy {
 
 	private boolean processComplexObjectPropertyDomains( OWLOntology ontoDescr, OWLDataFactory factory ) {
 		final Set<OWLObjectProperty> props = new HashSet<>();
-		ontoDescr.objectPropertiesInSignature( Imports.INCLUDED ).forEach( (op) -> {
+		OWLDataFactory f = ontoDescr.getOWLOntologyManager().getOWLDataFactory();
 
-			String typeName = NameUtils.buildNameFromIri( op.getIRI().getNamespace(), IRIUtils.fragmentOf( op.getIRI() ) );
+		ontoDescr.objectPropertiesInSignature( Imports.INCLUDED ).forEach( (op) -> processComplexObjectPropertyDomains( ontoDescr, factory, op, props, f ) );
 
-			Set<OWLClassExpression> domainClasses = getDomains( op, ontoDescr.importsClosure() ).collect( Collectors.toSet() );
-			if ( domainClasses.size() > 1 ) {
-				OWLObjectIntersectionOf and = factory.getOWLObjectIntersectionOf( domainClasses );
-
-				ontoDescr.objectPropertyDomainAxioms( op ).forEach( (dom) ->
-						                                                    applyAxiom( ontoDescr, new RemoveAxiom( ontoDescr, dom ) ) );
-				applyAxiom( ontoDescr, new AddAxiom( ontoDescr, factory.getOWLObjectPropertyDomainAxiom( op, and ) ) );
-
-				props.add( op );
-			}
-
-			if ( getDomains( op, ontoDescr.importsClosure() ).count() > 1 ) {
-				logger.warn( "Property " + op + " should have a single domain class, found " + getDomains( op, ontoDescr ).collect( Collectors.toList() ) );
-			}
-
-			getDomains( op, ontoDescr.importsClosure() )
-					.filter( IsAnonymous::isAnonymous )
-					.forEach( (dom) -> {
-						OWLClass domain = factory.getOWLClass( IRI.create(
-								NameUtils.separatingName( IRIUtils.ontologyNamespace( ontoDescr ) ) +
-										NameUtils.capitalize( typeName ) +
-										"Domain" ) );
-
-						OWLAnnotationAssertionAxiom ann = factory.getOWLAnnotationAssertionAxiom( factory.getOWLAnnotationProperty( IRI.create( "http://www.w3.org/2000/01/rdf-schema#comment" ) ),
-						                                                                          domain.getIRI(),
-						                                                                          factory.getOWLLiteral( "abstract", OWL2Datatype.XSD_STRING ) );
-
-						if ( logger.isDebugEnabled() ) { logger.debug("REPLACED ANON DOMAIN " + op + " with " + domain + ", was " + dom); }
-
-						applyAxiom( ontoDescr, new AddAxiom( ontoDescr, factory.getOWLDeclarationAxiom( domain ) ) );
-						applyAxiom( ontoDescr, new AddAxiom( ontoDescr, factory.getOWLEquivalentClassesAxiom( domain, dom ) ) );
-
-						OWLOntology defining = lookupDefiningOntology( ontoDescr, op );
-
-						applyAxiom( ontoDescr, new RemoveAxiom( defining, defining.objectPropertyDomainAxioms( op )
-						                                                          .findFirst()
-						                                                          .orElseThrow( IllegalStateException::new ) ) );
-						applyAxiom( ontoDescr, new AddAxiom( ontoDescr, factory.getOWLObjectPropertyDomainAxiom( op, domain ) ) );
-						applyAxiom( ontoDescr, new AddAxiom( ontoDescr, ann ) );
-
-						props.add( op );
-					});
-
-		} );
 		return ! props.isEmpty();
 	}
+
+	private void processComplexObjectPropertyDomains( OWLOntology ontoDescr, OWLDataFactory factory, OWLObjectProperty op, Set<OWLObjectProperty> props, OWLDataFactory f ) {
+		String typeName = NameUtils.buildNameFromIri( op.getIRI().getNamespace(), IRIUtils.fragmentOf( op.getIRI() ) );
+
+		Set<OWLObjectPropertyDomainAxiom> domainAxioms = getDomainAxioms( ontoDescr, op );
+		Set<OWLClassExpression> domainClasses = domainAxioms.stream().map( OWLObjectPropertyDomainAxiom::getDomain ).collect( Collectors.toSet() );
+
+		if ( domainClasses.isEmpty() ) {
+			return;
+		}
+
+		if ( domainClasses.size() > 1 ) {
+			logger.warn( "Property " + op + " should have a single domain class, found " + getDomains( op, ontoDescr ).collect( Collectors.toList() ) );
+
+			// resets the OP domain to the intersection of the multiple declared domains
+			OWLObjectIntersectionOf and = factory.getOWLObjectIntersectionOf( domainClasses );
+			OWLObjectPropertyDomainAxiom andAxiom = factory.getOWLObjectPropertyDomainAxiom( op, and );
+
+			domainAxioms.forEach( (dom) ->
+					                       applyAxiom( ontoDescr, new RemoveAxiom( lookupDefiningOntology( ontoDescr, dom ).orElse( ontoDescr ),
+					                                                               dom ) ) );
+
+			applyAxiom( ontoDescr, new AddAxiom( ontoDescr, andAxiom ) );
+
+			domainClasses.clear();
+			domainClasses.add( and );
+
+			domainAxioms.clear();
+			domainAxioms.add( andAxiom );
+			props.add( op );
+		}
+
+		if ( domainClasses.size() > 1 ) {
+			throw new IllegalStateException( "Unexpected number of domains : " + domainClasses );
+		}
+		OWLClassExpression currentDomain = domainClasses.iterator().next();
+
+		if ( currentDomain.isAnonymous() ) {
+			OWLClass namedDomain = factory.getOWLClass( IRI.create(
+					NameUtils.separatingName( IRIUtils.ontologyNamespace( ontoDescr ) ) +
+							NameUtils.capitalize( typeName ) +
+							"Domain" ) );
+
+			OWLAnnotationAssertionAxiom ann = factory.getOWLAnnotationAssertionAxiom( factory.getOWLAnnotationProperty( IRI.create( "http://www.w3.org/2000/01/rdf-schema#comment" ) ),
+			                                                                          namedDomain.getIRI(),
+			                                                                          factory.getOWLLiteral( "abstract", OWL2Datatype.XSD_STRING ) );
+
+			if ( logger.isDebugEnabled() ) { logger.debug("REPLACED ANON DOMAIN " + op + " with " + namedDomain + ", was " + currentDomain); }
+
+			applyAxiom( ontoDescr, new AddAxiom( ontoDescr, factory.getOWLDeclarationAxiom( namedDomain ) ) );
+			applyAxiom( ontoDescr, new AddAxiom( ontoDescr, factory.getOWLEquivalentClassesAxiom( namedDomain, currentDomain ) ) );
+
+			OWLObjectPropertyDomainAxiom oldDomainAxiom = domainAxioms.iterator().next();
+			OWLObjectPropertyDomainAxiom newDomainAxiom = f.getOWLObjectPropertyDomainAxiom( op, namedDomain );
+
+			Optional<OWLOntology> defining = lookupDefiningOntology( ontoDescr, oldDomainAxiom );
+			OWLOntology onto = defining.orElse( ontoDescr );
+
+			applyAxiom( onto, new RemoveAxiom( onto, oldDomainAxiom ) );
+			applyAxiom( onto, new AddAxiom( onto, newDomainAxiom ) );
+			applyAxiom( onto, new AddAxiom( onto, ann ) );
+
+			props.add( op );
+		}
+	}
+
 
 	private boolean processComplexDataPropertyDomains(OWLOntology ontoDescr, OWLDataFactory factory ) {
 
@@ -1185,13 +1214,16 @@ public class DelegateInferenceStrategy extends AbstractModelInferenceStrategy {
 						applyAxiom( ontoDescr, new AddAxiom( ontoDescr, factory.getOWLDeclarationAxiom( domain ) ) );
 						applyAxiom( ontoDescr, new AddAxiom( ontoDescr, factory.getOWLEquivalentClassesAxiom( domain, dom ) ) );
 
-						OWLOntology defining = lookupDefiningOntology( ontoDescr, dp );
+						Optional<OWLOntology> defining = lookupDefiningOntology( ontoDescr, dp );
 
-						applyAxiom( defining, new RemoveAxiom( defining, defining.dataPropertyDomainAxioms( dp )
-						                                                         .findFirst()
-						                                                         .orElseThrow( IllegalStateException::new ) ) );
-						applyAxiom( defining, new AddAxiom( defining, factory.getOWLDataPropertyDomainAxiom(dp, domain) ) );
-						applyAxiom( defining, new AddAxiom( defining, ann ) );
+						defining.ifPresent( owlOntology -> applyAxiom( owlOntology,
+						                                               new RemoveAxiom( owlOntology,
+						                                                                owlOntology.dataPropertyDomainAxioms( dp )
+						                                                                           .findFirst()
+						                                                                           .orElseThrow( IllegalStateException::new ) ) ) );
+						OWLOntology onto = defining.orElse( ontoDescr );
+						applyAxiom( onto, new AddAxiom( onto, factory.getOWLDataPropertyDomainAxiom(dp, domain) ) );
+						applyAxiom( onto, new AddAxiom( onto, ann ) );
 
 						props.add( dp );
 					});
@@ -1241,13 +1273,16 @@ public class DelegateInferenceStrategy extends AbstractModelInferenceStrategy {
 						applyAxiom( ontoDescr, new AddAxiom( ontoDescr, factory.getOWLDeclarationAxiom( range ) ) );
 						applyAxiom( ontoDescr, new AddAxiom( ontoDescr, factory.getOWLEquivalentClassesAxiom( range, ran ) ) );
 
-						OWLOntology defining = lookupDefiningOntology( ontoDescr, op );
+						Optional<OWLOntology> defining = lookupDefiningOntology( ontoDescr, op );
 
-						applyAxiom( ontoDescr, new RemoveAxiom( defining, defining.objectPropertyRangeAxioms( op )
-						                                                          .findFirst()
-						                                                          .orElseThrow( IllegalStateException::new ) ) );
-						applyAxiom( ontoDescr, new AddAxiom( ontoDescr, factory.getOWLObjectPropertyRangeAxiom( op, range) ) );
-						applyAxiom( ontoDescr, new AddAxiom( ontoDescr, ann ) );
+						defining.ifPresent( owlOntology -> applyAxiom( owlOntology,
+						                                               new RemoveAxiom( owlOntology,
+						                                                                owlOntology.objectPropertyRangeAxioms( op )
+						                                                                           .findFirst()
+						                                                                           .orElseThrow( IllegalStateException::new ) ) ) );
+						OWLOntology onto = defining.orElse( ontoDescr );
+						applyAxiom( onto, new AddAxiom( onto, factory.getOWLObjectPropertyRangeAxiom( op, range) ) );
+						applyAxiom( onto, new AddAxiom( onto, ann ) );
 
 						props.add( op );
 					});
@@ -1256,11 +1291,31 @@ public class DelegateInferenceStrategy extends AbstractModelInferenceStrategy {
 	}
 
 
-	public static OWLOntology lookupDefiningOntology( final OWLOntology ontoDescr, final OWLEntity axiom ) {
-		return ontoDescr.importsClosure()
-		                .reduce( ontoDescr, (od, imp) ->
-				                imp.axioms( Imports.EXCLUDED )
-				                   .anyMatch( ( ax) -> ax.equals( axiom ) ) ? imp : od );
+	public static Optional<OWLOntology> lookupDefiningOntology( final OWLOntology ontoDescr, final OWLEntity entity ) {
+		return lookupDefiningOntology( ontoDescr, ontoDescr.getOWLOntologyManager().getOWLDataFactory().getOWLDeclarationAxiom( entity ) );
+	}
+
+	public static Optional<OWLOntology> lookupDefiningOntology( final OWLOntology ontoDescr, final OWLAxiom axiom ) {
+//		OWLOntology cand = ontoDescr.importsClosure()
+//		                .reduce( ontoDescr, (od, imp) ->
+//				                imp.axioms( Imports.EXCLUDED )
+//				                   .anyMatch( ( ax) -> ax.equals( axiom ) ) ? imp : od );
+		List<OWLOntology> candidates = ontoDescr.importsClosure()
+		                                        .filter( (o) -> hasAxiom( o, axiom ) )
+		                                        .collect( Collectors.toList() );
+		if ( candidates.size() != 1 ) {
+			if ( candidates.size() == 0 ) {
+				return Optional.empty();
+			} else {
+				throw new UnsupportedOperationException( "TODO: Unable to handle axiom redefinitions : " + axiom );
+			}
+		} else {
+			return Optional.ofNullable( candidates.get( 0 ) );
+		}
+	}
+
+	private static boolean hasAxiom( OWLOntology o, OWLAxiom axiom ) {
+		return o.axioms( Imports.EXCLUDED ).anyMatch( (ax) -> ax.equals( axiom ) );
 	}
 
 
@@ -1268,7 +1323,7 @@ public class DelegateInferenceStrategy extends AbstractModelInferenceStrategy {
 		Set<OWLNamedIndividual> inds = new HashSet<>();
 		ontoDescr.individualsInSignature( Imports.INCLUDED ).forEach( (ind) ->  {
 
-			OWLOntology defining = lookupDefiningOntology( ontoDescr, ind );
+			OWLOntology defining = lookupDefiningOntology( ontoDescr, ind ).orElse( ontoDescr );
 
 			declareAnonymousIndividualSupertypes( defining, factory, ind );
 
@@ -1361,12 +1416,15 @@ public class DelegateInferenceStrategy extends AbstractModelInferenceStrategy {
 
 	public static boolean isSuperClass( OWLOntology ontoDescr, Set<OWLClassExpression> supers, OWLClassExpression klass2 ) {
 		OWLClass k = klass2.asOWLClass();
-		OWLOntology defining = lookupDefiningOntology( ontoDescr, k );
-		return defining.subClassAxiomsForSubClass( k )
-		               .map( OWLSubClassOfAxiom::getSuperClass )
-		               .anyMatch( (sup)->
-			supers.contains( sup )
-					|| ( ! sup.isAnonymous() && isSuperClass( ontoDescr, supers, sup ) ) );
+		return ontoDescr.importsClosure().anyMatch( (o) -> isSuperClassInOntology( k, supers, o, ontoDescr ) );
+	}
+
+	public static boolean isSuperClassInOntology( OWLClass k, Set<OWLClassExpression> supers, OWLOntology onto, OWLOntology ontoDescr ) {
+		return onto.subClassAxiomsForSubClass( k )
+		           .map( OWLSubClassOfAxiom::getSuperClass )
+		           .anyMatch( (sup)->
+				                      supers.contains( sup )
+						                      || ( ! sup.isAnonymous() && isSuperClass( ontoDescr, supers, sup ) ) );
 	}
 
 
@@ -1397,7 +1455,7 @@ public class DelegateInferenceStrategy extends AbstractModelInferenceStrategy {
 
 	private boolean processQuantifiedRestrictionsInClass(OWLClass klass, OWLClassExpression clax, OWLOntology ontology ) {
 
-		RestrictionInferencingVisitor visitor = new RestrictionInferencingVisitor( klass, ontology );
+		RestrictionInferencingVisitor visitor = new RestrictionInferencingVisitor( klass, ontology, restrictedFillerCache );
 		clax.accept( visitor );
 
 		return visitor.isDirty();
@@ -1468,12 +1526,13 @@ public class DelegateInferenceStrategy extends AbstractModelInferenceStrategy {
 		sb.append( " Number of objProps " ).append( ontoDescr.objectPropertiesInSignature( Imports.INCLUDED ).count() );
 		sb.append( "\t Number of objProp domains " ).append( ontoDescr.getAxiomCount( AxiomType.OBJECT_PROPERTY_DOMAIN ) );
 		ontoDescr.objectPropertiesInSignature( Imports.INCLUDED ).forEach(  (p) -> {
-			int num = ( int ) ontoDescr.objectPropertyDomainAxioms( p ).count();
+			Set<OWLObjectPropertyDomainAxiom> domains = getDomainAxioms( ontoDescr, p );
+			int num = domains.size();
 			switch ( num ) {
 				case 0:
 					break;
 				case 1:
-					OWLObjectPropertyDomainAxiom dom = ontoDescr.objectPropertyDomainAxioms( p ).iterator().next();
+					OWLObjectPropertyDomainAxiom dom = domains.iterator().next();
 					if ( ! ( dom.getDomain() instanceof OWLClass ) ) {
 						sb.append( "\t\t Complex Domain" ).append( p ).append( " --> " ).append( dom.getDomain() );
 					}
@@ -1931,8 +1990,27 @@ public class DelegateInferenceStrategy extends AbstractModelInferenceStrategy {
 	}
 
 
-	private void applyAxiom( OWLOntology ontology, OWLOntologyChange change ) {
-		ontology.getOWLOntologyManager().applyChange( change );
+	public static void applyAxiom( OWLOntology ontology, OWLOntologyChange change ) {
+		ChangeApplied cx = ontology.getOWLOntologyManager().applyChange( change );
+		if ( cx == ChangeApplied.UNSUCCESSFULLY ) {
+			throw new IllegalStateException( "Defensive: Unable to apply  :" + change + " to ontology " + ontology.getOntologyID() );
+		}
+		if ( cx == ChangeApplied.NO_OPERATION) {
+			throw new IllegalStateException( "Defensive: Nothing happened : " + change + " to ontology " + ontology.getOntologyID() );
+		}
 	}
 
+
+	public static Set<OWLObjectPropertyDomainAxiom> getDomainAxioms( OWLOntology ontoDescr, OWLObjectProperty op ) {
+		// transitive version of op.objectPropertyDomainAxioms
+		Set<OWLObjectPropertyDomainAxiom> domainAxioms = new HashSet<>();
+		ontoDescr.importsClosure().forEach( (o) -> o.objectPropertyDomainAxioms( op ).forEach( domainAxioms::add ) );
+		return domainAxioms;
+	}
+
+	public static Set<OWLEquivalentClassesAxiom> getEquivalentClassAxioms( OWLOntology ontoDescr, OWLClass klass ) {
+		Set<OWLEquivalentClassesAxiom> equivAxioms = new HashSet<>();
+		ontoDescr.importsClosure().forEach( (o) -> o.equivalentClassesAxioms( klass ).forEach( equivAxioms::add ) );
+		return equivAxioms;
+	}
 }

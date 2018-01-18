@@ -30,6 +30,9 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import static org.kie.semantics.builder.model.inference.DelegateInferenceStrategy.applyAxiom;
+import static org.kie.semantics.builder.model.inference.DelegateInferenceStrategy.getDomainAxioms;
+import static org.kie.semantics.builder.model.inference.DelegateInferenceStrategy.getEquivalentClassAxioms;
 import static org.kie.semantics.builder.model.inference.DelegateInferenceStrategy.isSuperClass;
 import static org.kie.semantics.builder.model.inference.DelegateInferenceStrategy.lookupDefiningOntology;
 
@@ -41,15 +44,15 @@ public class RestrictionInferencingVisitor implements OWLClassExpressionVisitor 
 	private OWLOntology ontoDescr;
 	private OWLDataFactory factory;
 
-	private Map<OWLClassExpression, OWLClass> fillerCache = new HashMap<>();
+	private Map<OWLClassExpression, OWLClass> fillerCache;
 
 	private boolean dirty = false;
-	private int counter = 0;
 
-	public RestrictionInferencingVisitor( OWLClass klass, OWLOntology ontology ) {
+	public RestrictionInferencingVisitor( OWLClass klass, OWLOntology ontology, Map<OWLClassExpression, OWLClass> fillerCache ) {
 		this.inKlass = klass;
 		this.ontoDescr = ontology;
 		this.factory = ontology.getOWLOntologyManager().getOWLDataFactory();
+		this.fillerCache = fillerCache;
 	}
 
 	private void process( OWLClassExpression expr ) {
@@ -86,53 +89,58 @@ public class RestrictionInferencingVisitor implements OWLClassExpressionVisitor 
 	private void rewirePropertyDomain( OWLObjectProperty prop, OWLClassExpression expr, OWLOntology ontoDescr ) {
 		OWLClass thing = ontoDescr.getOWLOntologyManager().getOWLDataFactory().getOWLThing();
 
-		OWLOntology defining = lookupDefiningOntology( ontoDescr, prop );
+		OWLOntology defining = lookupDefiningOntology( ontoDescr, prop ).orElse( ontoDescr );
 		Set<OWLObjectPropertyDomainAxiom> domains = defining.objectPropertyDomainAxioms( prop ).collect( Collectors.toSet() );
 
-		OWLClassExpression propDomain = thing;
 		for ( OWLObjectPropertyDomainAxiom dox : domains ) {
-			if ( ! dox.getDomain().isAnonymous() ) {
-				propDomain = dox.getDomain();
+			OWLOntology domDef = lookupDefiningOntology( ontoDescr, dox ).orElse( ontoDescr );
+			applyAxiom( domDef, new RemoveAxiom( domDef, dox ) );
+
+			OWLClass filler = fillerCache.get( dox.getDomain() );
+			if ( filler == null ) {
+				filler = factory.getOWLClass( IRI.create(
+						prop.getIRI().getNamespace(), NameUtils.capitalize( IRIUtils.fragmentOf( prop.getIRI() ) + "ExtraDomain" + fillerCache.size() ) ) );
+				applyAxiom( ontoDescr, new AddAxiom( ontoDescr, factory.getOWLDeclarationAxiom( filler ) ) );
+				applyAxiom( ontoDescr, new AddAxiom( ontoDescr, factory.getOWLSubClassOfAxiom( filler, thing ) ) );
+				applyAxiom( ontoDescr, new AddAxiom( ontoDescr, factory.getOWLObjectPropertyDomainAxiom( prop, filler ) ) );
+				fillerCache.put( dox.getDomain(), filler );
 			}
-			ontoDescr.getOWLOntologyManager().applyChange( new RemoveAxiom( ontoDescr, dox ) );
+
+			if ( !dox.getDomain().isAnonymous() ) {
+				OWLClassExpression propDomain = dox.getDomain();
+				applyAxiom( ontoDescr, new AddAxiom( ontoDescr, factory.getOWLSubClassOfAxiom( propDomain, filler ) ) );
+			}
+
+
+
+			Set<OWLClassExpression> aliases = new HashSet<>();
+			ontoDescr.axioms( AxiomType.EQUIVALENT_CLASSES, Imports.INCLUDED ).forEach( ( eq ) -> {
+				if ( eq.contains( expr ) ) {
+					aliases.addAll( eq.classExpressions().collect( Collectors.toSet() ) );
+				}
+			} );
+
+			final OWLClass extDomain = filler;
+			ontoDescr.axioms( AxiomType.SUBCLASS_OF, Imports.INCLUDED )
+			         .filter( ( sub ) -> aliases.contains( sub.getSuperClass() ) && !sub.getSubClass().equals( extDomain ) )
+			         .forEach( ( sub ) -> {
+				         OWLOntology def = lookupDefiningOntology( ontoDescr, sub ).orElse( ontoDescr );
+				         def.getOWLOntologyManager().applyChange( new RemoveAxiom( def, sub ) );
+				         def.getOWLOntologyManager().applyChange( new AddAxiom( def, factory.getOWLSubClassOfAxiom( sub.getSubClass(), extDomain ) ) );
+			         } );
 		}
-
-		OWLClass extDomain = factory.getOWLClass( IRI.create(
-				prop.getIRI().getNamespace(), NameUtils.capitalize( IRIUtils.fragmentOf( prop.getIRI() ) + "ExtraDomain" + counter++ ) ) );
-		ontoDescr.getOWLOntologyManager().applyChange( new AddAxiom( ontoDescr, factory.getOWLDeclarationAxiom( extDomain ) ) );
-		ontoDescr.getOWLOntologyManager().applyChange( new AddAxiom( ontoDescr, factory.getOWLSubClassOfAxiom( propDomain, extDomain ) ) );
-		ontoDescr.getOWLOntologyManager().applyChange( new AddAxiom( ontoDescr, factory.getOWLSubClassOfAxiom( extDomain, thing ) ) );
-		ontoDescr.getOWLOntologyManager().applyChange( new AddAxiom( ontoDescr, factory.getOWLObjectPropertyDomainAxiom( prop, extDomain ) ) );
-
-
-		Set<OWLClassExpression> aliases = new HashSet<>();
-		ontoDescr.axioms( AxiomType.EQUIVALENT_CLASSES, Imports.INCLUDED ).forEach( (eq) -> {
-			if ( eq.contains( expr ) ) {
-				aliases.addAll( eq.classExpressions().collect( Collectors.toSet() ) );
-			}
-		});
-
-		ontoDescr.axioms( AxiomType.SUBCLASS_OF, Imports.INCLUDED )
-		         .filter( (sub) -> aliases.contains( sub.getSuperClass() ) && ! sub.getSubClass().equals( extDomain ) )
-		         .forEach( (sub) -> {
-				ontoDescr.getOWLOntologyManager().applyChange( new RemoveAxiom( ontoDescr, sub )  );
-				ontoDescr.getOWLOntologyManager().applyChange( new AddAxiom( ontoDescr, factory.getOWLSubClassOfAxiom( sub.getSubClass(), extDomain ) )  );
-			});
 		dirty = true;
 	}
 
 	private boolean checkIsPropertyInDomain( OWLObjectProperty prop, OWLClass inKlass, OWLOntology ontoDescr ) {
-		OWLOntology defining = lookupDefiningOntology( ontoDescr, prop );
-
-		Set<OWLClassExpression> domains = defining.objectPropertyDomainAxioms( prop )
+		Set<OWLClassExpression> domains = getDomainAxioms( ontoDescr, prop ).stream()
 		                                          .map( HasDomain::getDomain )
 		                                          .collect( Collectors.toSet() );
 		if ( domains.size() == 0 || domains.contains( inKlass ) || isSuperClass( ontoDescr, domains, inKlass ) ) {
 			return true;
 		}
 
-		defining = lookupDefiningOntology( ontoDescr, inKlass );
-		return defining.equivalentClassesAxioms( inKlass )
+		return getEquivalentClassAxioms( ontoDescr, inKlass ).stream()
 		        .flatMap( OWLNaryClassAxiom::classExpressions )
 		        .filter( (ce) -> ! ce.isAnonymous() )
 		        .anyMatch( (ce) -> isSuperClass( ontoDescr, domains, ce ) );
@@ -148,16 +156,16 @@ public class RestrictionInferencingVisitor implements OWLClassExpressionVisitor 
 								NameUtils.capitalize( IRIUtils.fragmentOf( inKlass.getIRI() ) ) +
 								NameUtils.capitalize( IRIUtils.fragmentOf( prop.getIRI() ) ) +
 								"Filler" +
-								(counter++);
+								(fillerCache.size());
 				filler = factory.getOWLClass( IRI.create( fillerName ) );
 				fillerCache.put( fil, filler );
+				applyAxiom( ontoDescr, new AddAxiom( ontoDescr, factory.getOWLDeclarationAxiom( filler ) ) );
+				applyAxiom( ontoDescr, new AddAxiom( ontoDescr, factory.getOWLEquivalentClassesAxiom( filler, fil ) ) );
 			} else {
 				if ( logger.isDebugEnabled() )  { logger.debug( "REUSED FILLER FOR" + fil ); }
 			}
 
 			dirty = true;
-			ontoDescr.getOWLOntologyManager().applyChange( new AddAxiom( ontoDescr, factory.getOWLDeclarationAxiom( filler ) ) );
-			ontoDescr.getOWLOntologyManager().applyChange( new AddAxiom( ontoDescr, factory.getOWLEquivalentClassesAxiom( filler, fil ) ) );
 		}
 	}
 

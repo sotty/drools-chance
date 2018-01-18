@@ -42,7 +42,7 @@
     <module>kie-shapes-xsd-processor</module>
     <module>kie-shapes-xsd-processor-plugin</module>
 
-    <module>drools-shapes-examples</module>
+    <module>kie-shapes-examples</module>
   </modules>
 
   <properties>
