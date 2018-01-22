@@ -10,7 +10,8 @@ import org.kie.internal.utils.KieHelper;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 
 public class SerializationTest {
 
@@ -41,9 +42,8 @@ public class SerializationTest {
         Resource ruleDRL = kieServices.getResources().newClassPathResource( sourceDrl );
 
         KieHelper kieHelper = validateKieBuilder( traitDRL, ruleDRL );
-        KieSession kieSession = kieHelper.build( ProvenanceHelper.getProvenanceEnabledKieBaseConfiguration() ).newKieSession();
 
-        return kieSession;
+	    return kieHelper.build( ProvenanceHelper.getProvenanceEnabledKieBaseConfiguration() ).newKieSession();
     }
 
 

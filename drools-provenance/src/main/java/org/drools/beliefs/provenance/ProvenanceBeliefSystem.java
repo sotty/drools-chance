@@ -2,46 +2,38 @@ package org.drools.beliefs.provenance;
 
 import it.unibo.deis.lia.org.drools.expectations.model.ExpectationResult;
 import org.drools.core.beliefsystem.BeliefSet;
-import org.drools.core.beliefsystem.ModedAssertion;
 import org.drools.core.beliefsystem.simple.SimpleBeliefSystem;
 import org.drools.core.beliefsystem.simple.SimpleLogicalDependency;
 import org.drools.core.beliefsystem.simple.SimpleMode;
 import org.drools.core.common.EqualityKey;
 import org.drools.core.common.InternalFactHandle;
+import org.drools.core.common.InternalWorkingMemoryEntryPoint;
 import org.drools.core.common.LogicalDependency;
-import org.drools.core.common.NamedEntryPoint;
 import org.drools.core.common.TruthMaintenanceSystem;
 import org.drools.core.definitions.rule.impl.RuleImpl;
-import org.drools.core.factmodel.traits.BitMaskKey;
 import org.drools.core.factmodel.traits.TraitFactory;
 import org.drools.core.factmodel.traits.TraitProxy;
 import org.drools.core.metadata.Don;
 import org.drools.core.metadata.MetaCallableTask;
 import org.drools.core.metadata.Modify;
 import org.drools.core.metadata.NewInstance;
-import org.drools.core.metadata.WorkingMemoryTask;
 import org.drools.core.reteoo.ObjectTypeConf;
-import org.drools.core.reteoo.PropertySpecificUtil;
 import org.drools.core.spi.Activation;
 import org.drools.core.spi.PropagationContext;
-import org.drools.core.util.BitMaskUtil;
 import org.jboss.drools.provenance.Assertion;
-import org.kie.api.time.SessionClock;
-import org.kie.internal.runtime.beliefs.Mode;
 import org.w3.ns.prov.Activity;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.Date;
 import java.util.List;
 
 public class ProvenanceBeliefSystem
         extends SimpleBeliefSystem
         implements Provenance {
 
-    protected ProvenanceBeliefSystem( NamedEntryPoint ep, TruthMaintenanceSystem tms ) {
+    protected ProvenanceBeliefSystem( InternalWorkingMemoryEntryPoint ep, TruthMaintenanceSystem tms ) {
         super( ep, tms );
     }
 
@@ -190,7 +182,7 @@ public class ProvenanceBeliefSystem
     private Object executeNew( NewInstance newInstance, Activation activation, RuleImpl rule ) {
         if ( newInstance.isInterface() ) {
             newInstance.setInstantiatorFactory( TraitFactory.getTraitBuilderForKnowledgeBase( getEp().getKnowledgeBase() ).getInstantiatorFactory() );
-            Object target = newInstance.callUntyped();
+	        Object target = newInstance.callUntyped();
 
             getEp().getTraitHelper().don( activation,
                                         target,
@@ -203,7 +195,7 @@ public class ProvenanceBeliefSystem
             getEp().insert( target,
                             false,
                             rule,
-                            activation );
+                            activation.getPropagationContext().getTerminalNodeOrigin() );
             return target;
         }
     }
@@ -228,15 +220,12 @@ public class ProvenanceBeliefSystem
     @Override
     public Collection<? extends Activity> describeProvenance( Object o ) {
         List<? extends Activity> history = new ArrayList<Activity>( getProvenanceBS( o ).getGeneratingActivities() );
-        Collections.sort( history, new Comparator<Activity>() {
-            @Override
-            public int compare( Activity activity, Activity activity2 ) {
-                int x = activity.getEndedAtTime().get( 0 ).compareTo( activity2.getEndedAtTime().get( 0 ) );
-                if ( x == 0 ) {
-                    return activity instanceof Assertion ? -1 : 0;
-                }
-                return x;
+        Collections.sort( history, ( Comparator<Activity> ) ( activity, activity2 ) -> {
+            int x = activity.getEndedAtTime().get( 0 ).compareTo( activity2.getEndedAtTime().get( 0 ) );
+            if ( x == 0 ) {
+                return activity instanceof Assertion ? -1 : 0;
             }
+            return x;
         } );
         return history;
     }

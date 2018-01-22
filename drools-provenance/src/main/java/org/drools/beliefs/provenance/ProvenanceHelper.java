@@ -5,7 +5,6 @@ import org.drools.core.beliefsystem.BeliefSystem;
 import org.drools.core.common.BeliefSystemFactory;
 import org.drools.core.common.NamedEntryPoint;
 import org.drools.core.factmodel.traits.InstantiatorFactory;
-import org.drools.core.factmodel.traits.Thing;
 import org.drools.core.factmodel.traits.TraitableBean;
 import org.drools.core.reteoo.KieComponentFactory;
 import org.drools.core.rule.EntryPointId;

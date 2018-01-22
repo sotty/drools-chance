@@ -10,24 +10,57 @@ import org.drools.core.beliefsystem.simple.SimpleBeliefSet;
 import org.drools.core.common.InternalFactHandle;
 import org.drools.core.definitions.rule.impl.RuleImpl;
 import org.drools.core.factmodel.AnnotationDefinition;
-import org.drools.core.metadata.*;
-import org.drools.core.reteoo.LeftTuple;
+import org.drools.core.metadata.Don;
+import org.drools.core.metadata.DonLiteral;
+import org.drools.core.metadata.Identifiable;
+import org.drools.core.metadata.Lit;
+import org.drools.core.metadata.MetaCallableTask;
+import org.drools.core.metadata.MetadataContainer;
+import org.drools.core.metadata.Modify;
+import org.drools.core.metadata.ModifyLiteral;
+import org.drools.core.metadata.ModifyTask;
+import org.drools.core.metadata.NewInstance;
+import org.drools.core.metadata.Shed;
+import org.drools.core.metadata.WorkingMemoryTask;
 import org.drools.core.rule.Collect;
 import org.drools.core.rule.Declaration;
 import org.drools.core.rule.Pattern;
 import org.drools.core.rule.PatternSource;
 import org.drools.core.rule.RuleConditionElement;
 import org.drools.core.spi.Activation;
+import org.drools.core.spi.Tuple;
 import org.drools.core.util.Drools;
-import org.drools.semantics.Literal;
-import org.jboss.drools.provenance.*;
+import org.jboss.drools.provenance.AdditionImpl;
+import org.jboss.drools.provenance.AssertionImpl;
+import org.jboss.drools.provenance.DerogationImpl;
+import org.jboss.drools.provenance.Instance;
+import org.jboss.drools.provenance.InstanceImpl;
+import org.jboss.drools.provenance.Modification;
+import org.jboss.drools.provenance.Narrative;
+import org.jboss.drools.provenance.NarrativeImpl;
+import org.jboss.drools.provenance.Property;
+import org.jboss.drools.provenance.PropertyImpl;
+import org.jboss.drools.provenance.RecognitionImpl;
+import org.jboss.drools.provenance.RemovalImpl;
+import org.jboss.drools.provenance.RetractionImpl;
+import org.jboss.drools.provenance.Rule;
+import org.jboss.drools.provenance.RuleEngine;
+import org.jboss.drools.provenance.SettingImpl;
+import org.jboss.drools.provenance.TypificationImpl;
+import org.kie.semantics.Literal;
 import org.mvel2.templates.CompiledTemplate;
 import org.mvel2.templates.TemplateRuntime;
 import org.w3.ns.prov.Activity;
 import org.w3.ns.prov.ActivityImpl;
 
-import java.net.URI;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class ProvenanceBeliefSetImpl
@@ -136,7 +169,7 @@ public class ProvenanceBeliefSetImpl
     }
 
     private Map<String, Object> buildContext( Activation justifier ) {
-        Map map = new HashMap();
+        Map<String,Object> map = new HashMap<>();
         String currentConsequenceName = justifier.getConsequence().getName();
         Map<String, Declaration> declarationMap = justifier.getSubRule().getInnerDeclarations(currentConsequenceName);
         for ( String declaration :justifier.getSubRule().getOuterDeclarations().keySet() ) {
@@ -146,7 +179,7 @@ public class ProvenanceBeliefSetImpl
         }
 
         // TODO this may need to be recursively invoked due to nestable conditional elements
-        LeftTuple tuple = justifier.getTuple();
+        Tuple tuple = justifier.getTuple();
         List<RuleConditionElement> ces = justifier.getRule().getLhs().getChildren();
         Collections.reverse( ces );
         for ( RuleConditionElement element : ces ) {
@@ -154,7 +187,7 @@ public class ProvenanceBeliefSetImpl
                 PatternSource ps = ( (Pattern) element ).getSource();
                 if ( ps instanceof Collect ) {
                     Collect collect = (Collect) ps;
-                    List<?> facts = (List) tuple.getHandle().getObject();
+                    List<?> facts = (List) tuple.getFactHandle().getObject();
                     for ( Declaration dec : collect.getInnerDeclarations().values() ) {
                         List<Object> vals = new ArrayList<Object>( facts.size() );
                         for ( Object o : facts ) {
@@ -171,7 +204,7 @@ public class ProvenanceBeliefSetImpl
     }
 
     private void applyDecorations( Instance subject, Activity activity, Activation justifier, Map<String,Object> context ) {
-        List<RuleConditionElement> ruleElements = new ArrayList( justifier.getRule().getLhs().getChildren() );
+        List<RuleConditionElement> ruleElements = new ArrayList<>( justifier.getRule().getLhs().getChildren() );
         Collections.reverse( ruleElements );
 
         for ( int j = 0; j < justifier.getObjects().size(); j++ ) {

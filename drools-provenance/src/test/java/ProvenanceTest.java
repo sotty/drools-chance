@@ -3,18 +3,31 @@ import com.foo.MySubKlassImpl;
 import org.drools.beliefs.provenance.IdentifiableEntity;
 import org.drools.beliefs.provenance.Provenance;
 import org.drools.beliefs.provenance.ProvenanceHelper;
+import org.drools.compiler.builder.impl.ECE;
+import org.drools.compiler.builder.impl.ExpectAssemblerService;
 import org.drools.core.ClockType;
 import org.drools.core.beliefsystem.BeliefSet;
-import org.drools.core.common.*;
+import org.drools.core.common.EqualityKey;
+import org.drools.core.common.InternalFactHandle;
+import org.drools.core.common.NamedEntryPoint;
+import org.drools.core.common.TruthMaintenanceSystem;
 import org.drools.core.factmodel.traits.TraitProxy;
 import org.drools.core.marshalling.impl.ProtobufMarshaller;
 import org.drools.core.metadata.Identifiable;
 import org.drools.core.metadata.MetaCallableTask;
 import org.drools.core.rule.EntryPointId;
 import org.drools.core.time.SessionPseudoClock;
-import org.drools.core.util.*;
-import org.drools.semantics.Literal;
-import org.jboss.drools.provenance.*;
+import org.drools.core.util.ObjectHashMap;
+import org.jboss.drools.provenance.Addition;
+import org.jboss.drools.provenance.Assertion;
+import org.jboss.drools.provenance.Instance;
+import org.jboss.drools.provenance.Modification;
+import org.jboss.drools.provenance.Narrative;
+import org.jboss.drools.provenance.Property;
+import org.jboss.drools.provenance.Recognition;
+import org.jboss.drools.provenance.Removal;
+import org.jboss.drools.provenance.Setting;
+import org.jboss.drools.provenance.Typification;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -22,6 +35,8 @@ import org.kie.api.KieBase;
 import org.kie.api.KieServices;
 import org.kie.api.builder.Message;
 import org.kie.api.builder.Results;
+import org.kie.api.internal.assembler.KieAssemblers;
+import org.kie.api.internal.utils.ServiceRegistry;
 import org.kie.api.io.Resource;
 import org.kie.api.marshalling.ObjectMarshallingStrategy;
 import org.kie.api.runtime.EnvironmentName;
@@ -31,6 +46,7 @@ import org.kie.api.runtime.conf.ClockTypeOption;
 import org.kie.api.time.SessionClock;
 import org.kie.internal.marshalling.MarshallerFactory;
 import org.kie.internal.utils.KieHelper;
+import org.kie.semantics.Literal;
 import org.test.MyKlass;
 import org.test.MyKlassImpl;
 import org.test.MyKlass_;
@@ -43,11 +59,21 @@ import org.w3.ns.prov.Entity;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.Serializable;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-import static org.junit.Assert.*;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 @RunWith(value = Parameterized.class)
 public class ProvenanceTest {
@@ -90,9 +116,9 @@ public class ProvenanceTest {
         Activity act = history.iterator().next();
 
         assertTrue(act instanceof Modification);
-//        TruthMaintenanceSystem tms = ( (NamedEntryPoint) kieSession.getEntryPoint( EntryPointId.DEFAULT.getEntryPointId() ) ).getTruthMaintenanceSystem();
-//        assertEquals(2, tms.getEqualityKeyMap().size());
-//        assert("fooVal".equals(mk.getProp()));
+        TruthMaintenanceSystem tms = ( (NamedEntryPoint) kieSession.getEntryPoint( EntryPointId.DEFAULT.getEntryPointId() ) ).getTruthMaintenanceSystem();
+        assertEquals(2, tms.getEqualityKeyMap().size());
+        assert("fooVal".equals(mk.getProp()));
     }
 
     @Test
@@ -115,8 +141,8 @@ public class ProvenanceTest {
         kieSession.fireAllRules();
         sleep(kieSession, 100);
         kieSession.fireAllRules();
-//        TruthMaintenanceSystem tms = ( (NamedEntryPoint) kieSession.getEntryPoint( EntryPointId.DEFAULT.getEntryPointId() ) ).getTruthMaintenanceSystem();
-//        assertEquals( 2, tms.getEqualityKeyMap().size() );
+        TruthMaintenanceSystem tms = ( (NamedEntryPoint) kieSession.getEntryPoint( EntryPointId.DEFAULT.getEntryPointId() ) ).getTruthMaintenanceSystem();
+        assertEquals( 3, tms.getEqualityKeyMap().size() );
         assert("booVal".equals(mk.getProp()));
     }
 
@@ -880,13 +906,20 @@ public class ProvenanceTest {
         Resource traitDRL = kieServices.getResources().newClassPathResource( "org/test/tiny_declare.drl" );
         Resource ruleDRL = kieServices.getResources().newClassPathResource(path + sourceDrl);
 
-        KieHelper kieHelper = validateKieBuilder(traitDRL, ruleDRL, axioms);
+	    KieAssemblers assemblers = ServiceRegistry.getInstance().get( KieAssemblers.class );
+	    assemblers.getAssemblers().put( ECE.ECE, new ExpectAssemblerService() );
+
+	    KieHelper kieHelper = validateKieBuilder(traitDRL, ruleDRL, axioms);
+
         KieBase kieBase = kieHelper.build(ProvenanceHelper.getProvenanceEnabledKieBaseConfiguration(true));
+
+
         KieSessionConfiguration sessionConfiguration = kieServices.newKieSessionConfiguration();
         sessionConfiguration.setOption(ClockTypeOption.get(ClockType.PSEUDO_CLOCK.toExternalForm()));
         KieSession kieSession = kieBase.newKieSession(sessionConfiguration,null);
-        kieSession.setGlobal( "list", list );
-        kieSession.fireAllRules();
+       // kieSession.setGlobal( "list", list );
+
+	    kieSession.fireAllRules();
 
         return kieSession;
 
@@ -923,6 +956,6 @@ public class ProvenanceTest {
 
     public List<Activity> getProvenanceHistory( KieSession kieSession, Object o ) {
         Provenance provenance = ProvenanceHelper.getProvenance( kieSession );
-        return new ArrayList( provenance.describeProvenance( o ) );
+        return new ArrayList<>( provenance.describeProvenance( o ) );
     }
 }

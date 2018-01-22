@@ -12,6 +12,7 @@ import static org.test.MetaFactory.*;
 
 global List list;
 
+
 rule Init
 when
 then
@@ -44,3 +45,4 @@ then
     list.add( "001" );
     list.add( "002" );
 end
+
